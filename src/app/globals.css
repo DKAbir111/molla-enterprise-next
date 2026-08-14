@@ -1,0 +1,611 @@
+@import "tailwindcss";
+
+/* ============================================================================
+   DESIGN TOKENS — the single source of truth for every color in the app.
+   ============================================================================
+   Components must never hardcode a palette color (bg-white, text-gray-600,
+   border-gray-300, ...). They use the semantic utilities generated from these
+   tokens: bg-surface, text-foreground, text-muted-foreground, border-border,
+   bg-primary, text-danger, and so on.
+
+   Why this matters: dark mode used to be retrofitted with a list of
+   `html.theme-dark .text-gray-700 { ... !important }` overrides. Any class the
+   list forgot silently broke — that is exactly how the .glass auth cards ended
+   up light-on-light in dark mode. With tokens there is nothing to forget: the
+   value changes, the utility follows.
+
+   To retheme the app, edit the values below. Nothing else.
+
+   Light values live on :root; html.theme-dark overrides them. The theme class
+   is set on <html> by src/store/useTheme.ts from localStorage['bm_theme'].
+   ============================================================================ */
+
+:root {
+  /* --- Typography ------------------------------------------------------- */
+  --font-inter: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+  --font-noto-bengali: "Noto Sans Bengali", ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+
+  /* --- Brand ------------------------------------------------------------ */
+  --primary: #0d9488;            /* teal-600 */
+  --primary-hover: #0f766e;      /* teal-700 */
+  --primary-active: #115e59;     /* teal-800 */
+  --primary-foreground: #ffffff; /* text/icons on a primary fill */
+  --primary-subtle: #ccfbf1;     /* teal-100 — tinted badge/chip backgrounds */
+  --primary-subtle-foreground: #0f766e;
+
+  /* Gradient stops used by buttons, headers and .gradient-text */
+  --primary-gradient-from: #0d9488; /* teal-600 */
+  --primary-gradient-to: #14b8a6;   /* teal-500 */
+
+  /* --- Page ------------------------------------------------------------- */
+  --app-bg: linear-gradient(to bottom right, #f0fdfa, #ffffff, #ecfeff);
+  --background: #ffffff;
+
+  /* --- Text ------------------------------------------------------------- */
+  --foreground: #111827;         /* gray-900 — headings, primary copy */
+  --muted-foreground: #4b5563;   /* gray-600 — body, secondary copy */
+  --subtle-foreground: #6b7280;  /* gray-500 — captions, placeholders, hints */
+
+  /* --- Surfaces --------------------------------------------------------- */
+  --surface: #ffffff;            /* cards, panels, modals */
+  --surface-muted: #f9fafb;      /* gray-50 — table headers, inset areas */
+  --surface-hover: #f3f4f6;      /* gray-100 — hover/pressed rows */
+
+  /* Translucent "glass" surface (auth + onboarding cards) */
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(255, 255, 255, 0.2);
+
+  /* --- Lines ------------------------------------------------------------ */
+  --border: #d1d5db;             /* gray-300 — inputs, dividers */
+  --border-subtle: #e5e7eb;      /* gray-200 — card edges, light rules */
+  --ring: #14b8a6;               /* teal-500 — focus rings */
+
+  /* --- Status ----------------------------------------------------------- */
+  --success: #059669;
+  --success-foreground: #ffffff;
+  --success-subtle: #ecfdf5;
+
+  --danger: #dc2626;
+  --danger-hover: #b91c1c;
+  --danger-foreground: #ffffff;
+  --danger-subtle: #fef2f2;
+
+  --warning: #d97706;
+  --warning-foreground: #ffffff;
+  --warning-subtle: #fffbeb;
+
+  --info: #2563eb;
+  --info-foreground: #ffffff;
+  --info-subtle: #eff6ff;
+}
+
+/* ----------------------------------------------------------------------------
+   DARK THEME
+   Only token values change. No component and no utility is redefined here.
+   Primary lifts teal-600 -> teal-500: the same hue stays legible on dark fills.
+   ---------------------------------------------------------------------------- */
+html.theme-dark {
+  --primary: #14b8a6;            /* teal-500 — lifted so it stays legible on dark */
+  --primary-hover: #2dd4bf;      /* teal-400 */
+  --primary-active: #5eead4;     /* teal-300 */
+  /* Stays white in both themes: a saturated brand fill reads the same either
+     way, and the gradient buttons/headers already pair teal with white. */
+  --primary-foreground: #ffffff;
+  --primary-subtle: rgba(20, 184, 166, 0.15);
+  --primary-subtle-foreground: #5eead4;
+
+  --primary-gradient-from: #0f766e;
+  --primary-gradient-to: #14b8a6;
+
+  --app-bg: linear-gradient(to bottom right, #0b1220, #0b1220, #111827);
+  --background: #0b1220;
+
+  --foreground: #f3f4f6;
+  --muted-foreground: #cbd5e1;
+  --subtle-foreground: #94a3b8;
+
+  --surface: #111827;
+  --surface-muted: #0f172a;
+  --surface-hover: rgba(255, 255, 255, 0.06);
+
+  --glass-bg: rgba(17, 24, 39, 0.75);
+  --glass-border: rgba(255, 255, 255, 0.08);
+
+  --border: #334155;
+  --border-subtle: #1f2937;
+  --ring: #2dd4bf;
+
+  /* Status colours sit at the 500 level in dark: light enough to read as text
+     on a dark surface, still saturated enough to carry white text as a fill.
+     Foregrounds stay white so fills look the same in both themes. */
+  --success: #10b981;
+  --success-foreground: #ffffff;
+  --success-subtle: rgba(16, 185, 129, 0.14);
+
+  --danger: #ef4444;
+  --danger-hover: #dc2626;
+  --danger-foreground: #ffffff;
+  --danger-subtle: rgba(239, 68, 68, 0.14);
+
+  --warning: #f59e0b;
+  --warning-foreground: #ffffff;
+  --warning-subtle: rgba(245, 158, 11, 0.14);
+
+  --info: #3b82f6;
+  --info-foreground: #ffffff;
+  --info-subtle: rgba(59, 130, 246, 0.14);
+}
+
+/* ----------------------------------------------------------------------------
+   Expose tokens to Tailwind as utilities.
+   `inline` makes each utility emit var(--token) rather than baking the value in,
+   which is what lets the theme switch at runtime without rebuilding CSS.
+   ---------------------------------------------------------------------------- */
+@theme inline {
+  --color-primary: var(--primary);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-active: var(--primary-active);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-subtle: var(--primary-subtle);
+  --color-primary-subtle-foreground: var(--primary-subtle-foreground);
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-subtle-foreground: var(--subtle-foreground);
+
+  --color-surface: var(--surface);
+  --color-surface-muted: var(--surface-muted);
+  --color-surface-hover: var(--surface-hover);
+
+  --color-border: var(--border);
+  --color-border-subtle: var(--border-subtle);
+  --color-ring: var(--ring);
+
+  /* Aliases for the shadcn-flavoured names the Radix wrappers were written
+     against (`border-input`, `bg-popover`, ...). Without these the Select
+     trigger renders borderless and its dropdown panel is fully transparent. */
+  --color-input: var(--border);
+  --color-popover: var(--surface);
+  --color-popover-foreground: var(--foreground);
+  --color-accent: var(--surface-hover);
+  --color-accent-foreground: var(--foreground);
+
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-success-subtle: var(--success-subtle);
+
+  --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
+  --color-danger-foreground: var(--danger-foreground);
+  --color-danger-subtle: var(--danger-subtle);
+
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-warning-subtle: var(--warning-subtle);
+
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-info-subtle: var(--info-subtle);
+}
+
+@layer base {
+  body {
+    font-family: var(--font-inter);
+    color: var(--foreground);
+  }
+
+  [lang="bn"] body {
+    font-family: var(--font-noto-bengali), var(--font-inter);
+  }
+}
+
+/* App wrapper background */
+.app-bg {
+  background: var(--app-bg);
+}
+
+/* Dialog: allow hiding default close for custom headers */
+.hide-default-close .dialog-close {
+  display: none !important;
+}
+
+@layer components {
+  /* Card surface. Token-driven, so it themes automatically. */
+  .card {
+    background: var(--surface);
+    border-color: var(--border-subtle);
+  }
+
+  /* Translucent card used by the auth + onboarding pages. */
+  .glass {
+    background-color: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+  }
+}
+
+@layer utilities {
+  .gradient-text {
+    background-image: linear-gradient(to right, var(--primary-gradient-from), var(--primary-gradient-to));
+    background-clip: text;
+    -webkit-background-clip: text;
+    color: transparent;
+  }
+
+  .gradient-border {
+    @apply relative before:absolute before:inset-0 before:rounded-lg before:p-px before:-z-10;
+  }
+
+  .gradient-border::before {
+    background-image: linear-gradient(to right, var(--primary-gradient-from), var(--primary-gradient-to));
+  }
+
+  .gradient-primary {
+    background-image: linear-gradient(to right, var(--primary-gradient-from), var(--primary-gradient-to));
+  }
+
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+
+  @keyframes float {
+
+    0%,
+    100% {
+      transform: translateY(0px);
+    }
+
+    50% {
+      transform: translateY(-10px);
+    }
+  }
+
+  /* Horizontal marquee for breaking news ticker */
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  .marquee-mask {
+    display: inline-block;
+    animation: marquee 18s linear infinite;
+    -webkit-mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+    mask-image: linear-gradient(to right, transparent 0, black 40px, black calc(100% - 40px), transparent 100%);
+  }
+
+  .marquee-run {
+    animation-play-state: running;
+  }
+
+  .marquee-paused {
+    animation-play-state: paused;
+  }
+}
+
+/* ============================================================================
+   MOBILE APP SHELL
+   ============================================================================
+   The app is mobile-first: a phone gets a bottom tab bar and a compact top bar,
+   a desktop keeps the sidebar. Everything below exists to make the phone build
+   feel native rather than like a shrunken website.
+   ============================================================================ */
+
+:root {
+  /* Height of the bottom tab bar, excluding the home-indicator inset. Pages
+     add `--nav-total` as bottom padding so content never hides behind the bar. */
+  --nav-height: 4rem;
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --nav-total: calc(var(--nav-height) + var(--safe-bottom));
+}
+
+@layer base {
+
+  html {
+    /* Stops iOS from re-flowing type when the phone is rotated to landscape. */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+
+  body {
+    /* Kills the grey flash box iOS paints over every tapped element — the
+       single biggest tell that a page is a website and not an app. */
+    -webkit-tap-highlight-color: transparent;
+    /* No rubber-band overscroll past the ends of the page. */
+    overscroll-behavior-y: none;
+  }
+
+  /* iOS Safari zooms the whole viewport when a focused field's font-size is
+     under 16px, and never zooms back out. The app's fields are text-sm (14px),
+     so below the md breakpoint they are bumped to exactly 16px. Desktop keeps
+     the original 14px because it has no such behaviour. */
+  @media (max-width: 767px) {
+
+    input,
+    select,
+    textarea {
+      font-size: 16px;
+    }
+  }
+
+  /* Touch targets: anything interactive clears the 44px minimum Apple and the
+     WCAG 2.2 target-size rule both ask for. Scoped to coarse pointers so the
+     desktop UI keeps its tighter 36-40px controls. */
+  @media (pointer: coarse) {
+
+    button,
+    [role="button"],
+    a[href],
+    summary {
+      touch-action: manipulation;
+    }
+  }
+}
+
+@layer utilities {
+
+  /* --- Safe area ------------------------------------------------------- */
+  .pb-safe {
+    padding-bottom: var(--safe-bottom);
+  }
+
+  .pt-safe {
+    padding-top: var(--safe-top);
+  }
+
+  /* Bottom padding that clears the tab bar. Deliberately scoped to the mobile
+     breakpoint rather than relying on a `md:` override winning the cascade:
+     the desktop layout renders no tab bar and must keep its own padding. */
+  @media (max-width: 767px) {
+    .pb-nav {
+      padding-bottom: calc(var(--nav-total) + 1rem);
+    }
+  }
+
+  /* --- Touch feedback --------------------------------------------------- */
+  /* A press should answer instantly. Transform-only so it runs on the
+     compositor and never triggers layout. */
+  .tap {
+    -webkit-tap-highlight-color: transparent;
+    transition: transform 140ms cubic-bezier(0.2, 0, 0, 1), opacity 140ms ease;
+  }
+
+  .tap:active {
+    transform: scale(0.96);
+  }
+
+  .tap-sm:active {
+    transform: scale(0.98);
+  }
+
+  /* --- Scroll rails ----------------------------------------------------- */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Horizontal card rail: stat tiles scroll sideways on a phone instead of
+     stacking into a wall of full-width cards that buries the actual content.
+     Mobile-only by construction, so the desktop grid classes on the same
+     element apply untouched — no `md:` override has to win a cascade fight. */
+  @media (max-width: 767px) {
+    .rail {
+      display: flex;
+      gap: 0.75rem;
+      overflow-x: auto;
+      scroll-snap-type: x proximity;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+      /* Bleed to the screen edges so the rail reads as scrollable, then pad
+         the content back in line with the page gutter. */
+      margin-inline: -1rem;
+      padding-inline: 1rem;
+      padding-bottom: 0.25rem;
+    }
+
+    .rail::-webkit-scrollbar {
+      display: none;
+    }
+
+    .rail>* {
+      scroll-snap-align: start;
+      flex: 0 0 auto;
+    }
+  }
+
+  /* --- Motion ----------------------------------------------------------- */
+  @keyframes sheet-up {
+    from {
+      transform: translateY(100%);
+    }
+
+    to {
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+
+    to {
+      opacity: 1;
+    }
+  }
+
+  .animate-sheet-up {
+    animation: sheet-up 260ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
+
+  .animate-fade-in {
+    animation: fade-in 200ms ease-out;
+  }
+}
+
+/* ----------------------------------------------------------------------------
+   RESPONSIVE TABLES
+   A six-column grid cannot be read on a 360px screen, and a horizontal scroll
+   hides half the data behind a gesture nobody discovers. Below `md` every row
+   becomes its own card: the header row is dropped and each cell carries its
+   column name, taken from the cell's `data-label`, as an inline label.
+
+   Applied by <Table> automatically; opt out with <Table stacked={false} />.
+   ---------------------------------------------------------------------------- */
+@media (max-width: 767px) {
+
+  .table-stack,
+  .table-stack tbody,
+  .table-stack tfoot,
+  .table-stack tr,
+  .table-stack td {
+    display: block;
+    width: 100%;
+  }
+
+  /* Column headers are redundant once every cell is self-labelling. */
+  .table-stack thead {
+    display: none;
+  }
+
+  .table-stack tr {
+    margin-bottom: 0.75rem;
+    padding: 0.25rem 0.875rem;
+    border: 1px solid var(--border-subtle);
+    border-radius: 0.75rem;
+    background: var(--surface);
+  }
+
+  .table-stack tr:last-child {
+    margin-bottom: 0;
+  }
+
+  .table-stack td {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    /* Reset the desktop cell padding, which is far too generous stacked. */
+    padding: 0.625rem 0;
+    border-bottom: 1px solid var(--border-subtle);
+    text-align: right;
+  }
+
+  .table-stack tr td:last-child {
+    border-bottom: 0;
+  }
+
+  .table-stack td::before {
+    content: attr(data-label);
+    flex: 0 0 auto;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--subtle-foreground);
+    text-align: left;
+  }
+
+  /* A cell with no label — the actions column — gets the full card width. */
+  .table-stack td:not([data-label])::before {
+    content: none;
+  }
+
+  .table-stack td:not([data-label]) {
+    justify-content: flex-end;
+  }
+
+  /* The identity cell (name + avatar, invoice number, ...) is the card's
+     headline: full width, left aligned, no label. Mark it `data-primary`. */
+  .table-stack td[data-primary] {
+    display: block;
+    padding-top: 0.875rem;
+    text-align: left;
+  }
+
+  .table-stack td[data-primary]::before {
+    content: none;
+  }
+
+  /* Nested layout inside a cell should not be stretched by the flex parent. */
+  .table-stack td>* {
+    min-width: 0;
+  }
+}
+
+/* Respect the OS "reduce motion" setting across every animation above. */
+@media (prefers-reduced-motion: reduce) {
+
+  .tap,
+  .tap-sm {
+    transition: none;
+  }
+
+  .tap:active,
+  .tap-sm:active {
+    transform: none;
+  }
+
+  .animate-sheet-up,
+  .animate-fade-in,
+  .animate-float,
+  .marquee-mask {
+    animation: none;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .print\:hidden {
+    display: none !important;
+  }
+
+  .print\:block {
+    display: block !important;
+  }
+
+  .print\:p-8 {
+    padding: 2rem !important;
+  }
+
+  /* Hide navigation and other UI elements when printing */
+  nav,
+  .sidebar,
+  .header,
+  button:not(.print-button) {
+    display: none !important;
+  }
+
+  /* Ensure proper page breaks */
+  .print-page-break {
+    page-break-before: always;
+  }
+
+  /* Optimize table printing */
+  table {
+    page-break-inside: avoid;
+  }
+
+  th,
+  td {
+    page-break-inside: avoid;
+  }
+
+  /* Ensure proper colors for print */
+  .print\:text-black {
+    color: black !important;
+  }
+
+  .print\:bg-white {
+    background-color: white !important;
+  }
+}
