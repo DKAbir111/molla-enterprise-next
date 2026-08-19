@@ -1,15 +1,17 @@
 'use client'
 
 import { useEffect, useMemo, useState, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table'
 import { formatCurrency, formatDate, formatOrderCode } from '@/lib/utils'
-import { api } from '@/lib/api/http'
 import { ChevronLeft } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
+import { useRouter } from '@/i18n/navigation'
+import { orderTotals } from '@/lib/totals'
+import { api } from '@/lib/api'
 
 export default function SellDetailsPage() {
   const t = useTranslations('invoice')
@@ -27,15 +29,7 @@ export default function SellDetailsPage() {
     return () => { mounted = false }
   }, [params.id])
 
-  const totals = useMemo(() => {
-    const itemsTotal = (sell?.items || []).reduce((s: number, it: any) => s + Number(it.total || 0), 0)
-    const discount = Number(sell?.discount || 0)
-    const transport = Number(sell?.transportTotal || 0)
-    const grand = Math.max(0, itemsTotal + transport - discount)
-    const paid = Number(sell?.paidAmount || 0)
-    const due = Math.max(0, grand - paid)
-    return { itemsTotal, discount, transport, grand, paid, due }
-  }, [sell])
+  const totals = useMemo(() => orderTotals(sell ?? {}), [sell])
 
   if (!sell) {
     return (

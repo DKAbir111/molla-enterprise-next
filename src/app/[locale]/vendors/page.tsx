@@ -2,114 +2,149 @@
 
 import React, { useEffect, useMemo, useState } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
+import { MapPin, Phone } from 'lucide-react'
 import { Card, CardContent } from '@/components/ui/card'
-import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { StatRail, StatTile } from '@/components/shared/StatRail'
-import { Fab } from '@/components/shared/Fab'
-import { listBuys } from '@/lib/api/buy-api'
-import { listVendors, deleteVendor } from '@/lib/api/vendor-api'
+import {
+  ContactCell,
+  CountBadge,
+  DeleteConfirmationModal,
+  EmptyState,
+  Fab,
+  IconTextCell,
+  PageToolbar,
+  RowActions,
+  StatRail,
+  StatTile,
+} from '@/components/shared'
 import { VendorModal } from '@/components/vendors/VendorModal'
-import { DeleteConfirmationModal } from '@/components/shared/DeleteConfirmationModal'
+import { listBuys, listVendors, deleteVendor } from '@/lib/api'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { Search, Eye, Edit, Trash2, Phone, MapPin, Plus } from 'lucide-react'
-// Dialog removed; dedicated details route used
+import { grandTotalOf } from '@/lib/totals'
+import type { Buy, Vendor } from '@/types'
 
+/** A vendor plus the figures rolled up from their purchase history. */
 type VendorRow = {
-  address: string; name: string; phone?: string; purchases: number; totalSpent: number; totalDue: number; since?: Date; lastPurchase?: Date; buys: any[]
+  vendor: Vendor
+  purchases: number
+  totalSpent: number
+  totalDue: number
+  since?: Date
+  lastPurchase?: Date
+}
+
+/**
+ * Buys carry the vendor's name and phone rather than a foreign key, so a row is
+ * matched on that pair. Keep the key construction in one place — building it
+ * differently on either side silently produced vendors with no purchases.
+ */
+function vendorKey(name: string, phone?: string | null) {
+  return `${name}|${phone || ''}`
+}
+
+/** Detail route for a vendor. Also encodes the name/phone pair. */
+function vendorHref(v: Vendor) {
+  return `/vendors/${encodeURIComponent(v.name)}--${encodeURIComponent(v.phone || '')}`
 }
 
 export default function VendorsPage() {
   const t = useTranslations('vendors')
   const locale = useLocale()
-  const [buys, setBuys] = useState<any[]>([])
-  const [vendorsState, setVendorsState] = useState<any[]>([])
-  const [modal, setModal] = useState<{ open: boolean; mode: 'create' | 'edit'; vendor?: any | null }>({ open: false, mode: 'create', vendor: null })
-  const [vendorToDelete, setVendorToDelete] = useState<any | null>(null)
+  const [buys, setBuys] = useState<Buy[]>([])
+  const [vendors, setVendors] = useState<Vendor[]>([])
+  const [modal, setModal] = useState<{ open: boolean; mode: 'create' | 'edit'; vendor?: Vendor | null }>({
+    open: false,
+    mode: 'create',
+    vendor: null,
+  })
+  const [vendorToDelete, setVendorToDelete] = useState<Vendor | null>(null)
   const [search, setSearch] = useState('')
-  // details handled via dedicated route
 
   useEffect(() => {
     let mounted = true
-    Promise.all([listBuys<any[]>(), listVendors<any[]>()])
-      .then(([b, v]) => { if (!mounted) return; setBuys(b || []); setVendorsState(v || []) })
+    Promise.all([listBuys<Buy[]>(), listVendors<Vendor[]>()])
+      .then(([b, v]) => {
+        if (!mounted) return
+        setBuys(b || [])
+        setVendors(v || [])
+      })
       .catch(() => { })
     return () => { mounted = false }
   }, [])
 
-  const vendors: VendorRow[] = useMemo(() => {
+  const rows: VendorRow[] = useMemo(() => {
     const map = new Map<string, VendorRow>()
-    // Initialize from vendor master
-    for (const v of vendorsState) {
-      const key = `${v.name}|${v.phone || ''}`
-      map.set(key, { name: v.name, address: v.address, phone: v.phone, purchases: 0, totalSpent: 0, totalDue: 0, since: v.createdAt ? new Date(v.createdAt) : undefined, lastPurchase: undefined, buys: [] } as unknown as VendorRow)
+    for (const v of vendors) {
+      map.set(vendorKey(v.name, v.phone), {
+        vendor: v,
+        purchases: 0,
+        totalSpent: 0,
+        totalDue: 0,
+        since: v.createdAt ? new Date(v.createdAt) : undefined,
+      })
     }
-    // Fold in buys
+
     for (const b of buys) {
-      const key = `${b.vendorName || 'Vendor'}|${b.vendorPhone || ''}`
-      const existing = map.get(key)
-      if (!existing) continue // only aggregate for vendors present in master list
-      const row = existing
-      const itemsTotal = (b.items || []).reduce((s: number, it: any) => s + Number(it.total || 0), 0)
-      const discount = Number(b.discount || 0)
-      const transport = Number(b.transportTotal || 0)
-      const grand = Math.max(0, itemsTotal + transport - discount)
-      const paid = Number(b.paidAmount || 0)
+      // Only aggregate onto vendors that exist in the master list; a buy whose
+      // vendor was deleted should not resurrect a row.
+      const row = map.get(vendorKey(b.vendorName || 'Vendor', b.vendorPhone))
+      if (!row) continue
+
+      const grand = grandTotalOf(b)
       row.purchases += 1
       row.totalSpent += grand
-      row.totalDue += Math.max(0, grand - paid)
-      const d = b.createdAt ? new Date(b.createdAt) : undefined
-      if (!row.since || (d && d < row.since)) row.since = d
-      if (!row.lastPurchase || (d && d > row.lastPurchase)) row.lastPurchase = d
-      row.buys.push(b)
-      map.set(key, row)
+      row.totalDue += Math.max(0, grand - Number(b.paidAmount || 0))
+
+      const at = b.createdAt ? new Date(b.createdAt) : undefined
+      if (at && (!row.since || at < row.since)) row.since = at
+      if (at && (!row.lastPurchase || at > row.lastPurchase)) row.lastPurchase = at
     }
     return Array.from(map.values())
-  }, [buys, vendorsState])
+  }, [buys, vendors])
 
-  const filtered = vendors.filter(v => {
+  const filtered = useMemo(() => {
     const q = search.toLowerCase()
-    return v.name.toLowerCase().includes(q) || (v.phone || '').toLowerCase().includes(q)
-  })
+    return rows.filter(
+      (r) => r.vendor.name.toLowerCase().includes(q) || (r.vendor.phone || '').toLowerCase().includes(q)
+    )
+  }, [rows, search])
 
-  const totals = {
-    vendors: vendors.length,
-    purchases: vendors.reduce((s, v) => s + v.purchases, 0),
-    spent: vendors.reduce((s, v) => s + v.totalSpent, 0),
-    due: vendors.reduce((s, v) => s + v.totalDue, 0),
-  }
+  const totals = useMemo(
+    () => ({
+      vendors: rows.length,
+      purchases: rows.reduce((s, r) => s + r.purchases, 0),
+      spent: rows.reduce((s, r) => s + r.totalSpent, 0),
+      due: rows.reduce((s, r) => s + r.totalDue, 0),
+    }),
+    [rows]
+  )
+
+  const openCreate = () => setModal({ open: true, mode: 'create', vendor: null })
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="relative w-full md:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle-foreground" />
-          <Input type="search" placeholder={t('search')} value={search} onChange={(e) => setSearch(e.target.value)} className="h-12 pl-10 md:h-10" />
-        </div>
-        {/* Mobile uses the floating action button below instead. */}
-        <Button className="hidden shrink-0 items-center gap-2 md:flex" onClick={() => setModal({ open: true, mode: 'create' })}>
-          <Plus className="h-4 w-4" /> {t('addVendor')}
-        </Button>
-      </div>
+      <PageToolbar
+        search={search}
+        onSearchChange={setSearch}
+        searchPlaceholder={t('search')}
+        actionLabel={t('addVendor')}
+        onAction={openCreate}
+      />
 
-      {/* Mini Dashboard */}
       <StatRail>
         <StatTile label={t('vendorsCount')} value={totals.vendors} />
         <StatTile label={t('purchases')} value={totals.purchases} />
-        <StatTile label={t('totalSpent')} value={formatCurrency(totals.spent, locale as any)} tone="text-info" />
-        <StatTile label={t('totalDue')} value={formatCurrency(totals.due, locale as any)} tone="text-warning" />
+        <StatTile label={t('totalSpent')} value={formatCurrency(totals.spent, locale)} tone="text-info" />
+        <StatTile label={t('totalDue')} value={formatCurrency(totals.due, locale)} tone="text-warning" />
       </StatRail>
 
       {filtered.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-16 text-center">
-            <div className="mx-auto mb-4 h-14 w-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center text-2xl">+</div>
-            <h3 className="text-lg font-semibold mb-1">{t('emptyTitle')}</h3>
-            <p className="text-muted-foreground mb-4">{t('emptyDescription')}</p>
-            <Button onClick={() => setModal({ open: true, mode: 'create' })}>{t('addVendor')}</Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title={t('emptyTitle')}
+          description={t('emptyDescription')}
+          actionLabel={t('addVendor')}
+          onAction={openCreate}
+        />
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -125,55 +160,36 @@ export default function VendorsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((v, idx) => (
-                  <TableRow key={`${v.name}-${idx}`}>
+                {filtered.map((row) => (
+                  <TableRow key={row.vendor.id}>
+                    {/* `data-primary` makes this the card headline on mobile;
+                        `data-label` turns the rest into labelled rows. */}
                     <TableCell className="font-medium" data-primary="">
-                      <div className="flex items-center gap-3">
-                        <div className="h-10 w-10 rounded-full bg-linear-to-r from-emerald-600 to-blue-600 flex items-center justify-center text-white font-semibold">
-                          {v.name.charAt(0)}
-                        </div>
-                        <div>
-                          <a href={`/${locale}/vendors/${encodeURIComponent(v.name)}--${encodeURIComponent(v.phone || '')}`}>
-                            <p className="font-medium hover:text-info cursor-pointer">{v.name}</p>
-                          </a>
-                          <p className="text-sm text-subtle-foreground">{t('since')} {v.since ? formatDate(v.since, locale as any) : '-'}</p>
-                        </div>
-                      </div>
+                      <ContactCell
+                        name={row.vendor.name}
+                        href={vendorHref(row.vendor)}
+                        subtitle={`${t('since')} ${row.since ? formatDate(row.since, locale) : '-'}`}
+                      />
                     </TableCell>
                     <TableCell data-label={t('phone')}>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <Phone className="h-3 w-3 shrink-0" />
-                        {v.phone || '-'}
-                      </div>
+                      <IconTextCell icon={Phone} value={row.vendor.phone} />
                     </TableCell>
                     <TableCell data-label={t('address')}>
-                      <div className="flex items-center gap-1 text-muted-foreground">
-                        <MapPin className="h-3 w-3 shrink-0" />
-                        {v.address || '-'}
-                      </div>
+                      <IconTextCell icon={MapPin} value={row.vendor.address} />
                     </TableCell>
                     <TableCell className="md:text-center" data-label={t('totalPurchases')}>
-                      <span className="inline-flex items-center justify-center px-2 py-1 text-xs font-medium rounded-full bg-info-subtle text-info">{v.purchases}</span>
+                      <CountBadge value={row.purchases} />
                     </TableCell>
-                    <TableCell className="font-medium md:text-right" data-label={t('totalSpent')}>{formatCurrency(v.totalSpent, locale as any)}</TableCell>
+                    <TableCell className="font-medium md:text-right" data-label={t('totalSpent')}>
+                      {formatCurrency(row.totalSpent, locale)}
+                    </TableCell>
                     <TableCell className="md:text-right">
-                      <div className="flex justify-end gap-2">
-                        <a href={`/${locale}/vendors/${encodeURIComponent(v.name)}--${encodeURIComponent(v.phone || '')}`}>
-                          <Button variant="ghost" size="icon" className="tap" title={t('view')} aria-label={t('view')}><Eye className="h-4 w-4" /></Button>
-                        </a>
-                        <Button variant="ghost" size="icon" className="tap" title={t('edit')} aria-label={t('edit')} onClick={() => {
-                          const match = vendorsState.find(x => x.name === v.name && x.phone === v.phone)
-                          if (match) { setModal({ open: true, mode: 'edit', vendor: match }) }
-                        }}>
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button variant="ghost" size="icon" className="tap text-danger" title={t('delete')} aria-label={t('delete')} onClick={() => {
-                          const match = vendorsState.find(x => x.name === v.name && x.phone === v.phone)
-                          if (match) setVendorToDelete(match)
-                        }}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      <RowActions
+                        viewHref={vendorHref(row.vendor)}
+                        onEdit={() => setModal({ open: true, mode: 'edit', vendor: row.vendor })}
+                        onDelete={() => setVendorToDelete(row.vendor)}
+                        labels={{ view: t('view'), edit: t('edit'), delete: t('delete') }}
+                      />
                     </TableCell>
                   </TableRow>
                 ))}
@@ -182,23 +198,36 @@ export default function VendorsPage() {
           </CardContent>
         </Card>
       )}
-      <Fab onClick={() => setModal({ open: true, mode: 'create' })} label={t('addVendor')} />
+
+      <Fab onClick={openCreate} label={t('addVendor')} />
 
       <VendorModal
         open={modal.open}
         mode={modal.mode}
         vendor={modal.vendor || null}
-        onClose={() => setModal(m => ({ ...m, open: false }))}
-        onSaved={(v) => {
-          if (modal.mode === 'edit') setVendorsState(prev => prev.map(x => x.id === v.id ? v : x))
-          else setVendorsState(prev => [...prev, v])
-        }}
+        onClose={() => setModal((m) => ({ ...m, open: false }))}
+        onSaved={(v: Vendor) =>
+          setVendors((prev) =>
+            modal.mode === 'edit' ? prev.map((x) => (x.id === v.id ? v : x)) : [...prev, v]
+          )
+        }
       />
+
       {vendorToDelete && (
-        <DeleteConfirmationModal isOpen={!!vendorToDelete} onClose={() => setVendorToDelete(null)} onConfirm={async () => {
-          try { await deleteVendor(vendorToDelete.id); setVendorsState(prev => prev.filter(x => x.id !== vendorToDelete.id)) } catch { }
-          setVendorToDelete(null)
-        }} title={t('deleteTitle')} description={t('deleteConfirm', { name: vendorToDelete.name })} />
+        <DeleteConfirmationModal
+          isOpen
+          onClose={() => setVendorToDelete(null)}
+          onConfirm={async () => {
+            const id = vendorToDelete.id
+            try {
+              await deleteVendor(id)
+              setVendors((prev) => prev.filter((x) => x.id !== id))
+            } catch { }
+            setVendorToDelete(null)
+          }}
+          title={t('deleteTitle')}
+          description={t('deleteConfirm', { name: vendorToDelete.name })}
+        />
       )}
     </div>
   )

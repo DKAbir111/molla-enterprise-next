@@ -1,4 +1,5 @@
 import type { Metadata, Viewport } from "next";
+import { getLocale } from "next-intl/server";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -27,13 +28,23 @@ export const viewport: Viewport = {
   ],
 };
 
-export default function RootLayout({
+// `lang` has to be resolved here rather than in `[locale]/layout.tsx`, because
+// the <html> element lives in the root layout and that layout sits above the
+// [locale] segment, so it never receives the param. `getLocale()` reads it from
+// the same request context next-intl already established in the middleware.
+//
+// It was hardcoded to "en", which mislabelled every Bengali page for screen
+// readers and translation tooling, and stopped the `[lang="bn"]` font rule in
+// globals.css from ever matching.
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang={locale} suppressHydrationWarning>
       <body className="antialiased" suppressHydrationWarning>
         {children}
       </body>

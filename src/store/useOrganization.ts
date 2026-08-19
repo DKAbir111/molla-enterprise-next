@@ -1,6 +1,6 @@
 import { create } from 'zustand'
-import { getMyOrganization } from '@/lib/api/organization-api'
 import type { Organization } from '@/types'
+import { getMyOrganization } from '@/lib/api'
 
 type OrgState = {
   organization: Organization | null | undefined

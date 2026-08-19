@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
 import { useLocale } from 'next-intl'
 import { getAuthToken } from '@/lib/api'
+import { useRouter } from '@/i18n/navigation'
 
 export function AuthGuard() {
   const router = useRouter()
@@ -11,7 +11,7 @@ export function AuthGuard() {
 
   React.useEffect(() => {
     const token = getAuthToken()
-    if (!token) router.replace(`/${locale}/login`)
+    if (!token) router.replace('/login')
   }, [router, locale])
 
   return null

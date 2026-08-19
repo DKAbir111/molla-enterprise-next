@@ -1,7 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useTranslations, useLocale } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -14,10 +14,8 @@ import {
 } from '@/components/ui/dialog'
 import { Save, PlusCircle } from 'lucide-react'
 import { toast } from 'sonner'
-import { createTransaction } from '@/lib/api/transaction-api'
-import { normalizeTransaction } from '@/lib/api'
+import { createTransaction, normalizeTransaction } from '@/lib/api'
 
-type Mode = 'create'
 
 export type TransactionModalProps = {
   open: boolean
@@ -27,7 +25,6 @@ export type TransactionModalProps = {
 
 export function TransactionModal({ open, onClose, onSaved }: TransactionModalProps) {
   const t = useTranslations('accounts')
-  const locale = useLocale()
 
   const [description, setDescription] = React.useState('')
   const [type, setType] = React.useState<'income' | 'expense'>('income')

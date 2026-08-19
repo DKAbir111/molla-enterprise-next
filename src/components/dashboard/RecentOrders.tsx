@@ -1,25 +1,14 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { formatCurrency, formatOrderCode } from '@/lib/utils'
-import { api } from '@/lib/api/http'
-import { normalizeOrder } from '@/lib/api'
-import { useLocale } from 'next-intl'
+import { cn, formatCurrency, formatOrderCode } from '@/lib/utils'
+import { api, normalizeOrder } from '@/lib/api'
 import React from 'react'
-import Link from 'next/link'
+import { Link } from '@/i18n/navigation'
 
-interface RecentOrdersProps {
-  // If you need to pass filtered orders, you can add a prop like:
-  // orders: any[];
-}
-
-function cn(...classes: string[]) {
-  return classes.filter(Boolean).join(' ')
-}
-
-export function RecentOrders({ }: RecentOrdersProps) {
+export function RecentOrders() {
   const t = useTranslations('dashboard')
   const locale = useLocale()
   const [orders, setOrders] = React.useState<any[]>([])
@@ -38,7 +27,7 @@ export function RecentOrders({ }: RecentOrdersProps) {
     <Card className="rounded-2xl">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">{t('recentSells') || 'Recent Sells'}</CardTitle>
-        <Link href={`/${locale}/sells`}>
+        <Link href={'/sells'}>
           <Button variant="outline" size="sm">
             {t('viewAll')}
           </Button>
@@ -50,7 +39,7 @@ export function RecentOrders({ }: RecentOrdersProps) {
         ) : (
           <div className="space-y-2">
             {orders.slice(0, 5).map((order) => (
-              <Link key={order.id} href={`/${locale}/sells/${order.id}`} className="block">
+              <Link key={order.id} href={`/sells/${order.id}`} className="block">
                 <div className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle p-3 transition-colors hover:bg-surface-hover">
                   <div className="flex min-w-0 items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl gradient-primary font-semibold text-primary-foreground">

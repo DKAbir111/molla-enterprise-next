@@ -15,8 +15,12 @@ import {
 import { useStore } from '@/store/useStore'
 import { UserPlus, Edit3, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { normalizeCustomer } from '@/lib/api'
-import { createCustomer as apiCreateCustomer, updateCustomer as apiUpdateCustomer, uploadCustomerAvatar } from '@/lib/api/customer-api'
+import {
+  createCustomer as apiCreateCustomer,
+  normalizeCustomer,
+  updateCustomer as apiUpdateCustomer,
+  uploadCustomerAvatar,
+} from '@/lib/api'
 
 type Mode = 'create' | 'edit'
 

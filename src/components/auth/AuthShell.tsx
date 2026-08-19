@@ -1,9 +1,9 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { Check } from 'lucide-react'
+import { Link } from '@/i18n/navigation'
 
 /**
  * Auth/onboarding layout: brand panel + form column.
@@ -25,7 +25,6 @@ export function AuthShell({
   subtitle?: string
   altAction?: { label: string; href: string; cta: string }
 }) {
-  const locale = useLocale()
   const t = useTranslations('auth')
   const valueProps = [t('prop1'), t('prop2'), t('prop3')]
 
@@ -43,7 +42,7 @@ export function AuthShell({
           className="pointer-events-none absolute -bottom-32 -left-20 h-96 w-96 rounded-full bg-black/10 blur-3xl"
         />
 
-        <Link href={`/${locale}`} className="relative flex items-center gap-3">
+        <Link href={'/'} className="relative flex items-center gap-3">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src="/conix.png"
@@ -90,7 +89,7 @@ export function AuthShell({
       <main className="app-bg flex min-h-screen flex-col">
         <div className="flex items-center justify-between gap-4 p-6 lg:px-12">
           {/* Compact brand for mobile, where the panel is hidden. */}
-          <Link href={`/${locale}`} className="flex items-center gap-2 lg:invisible">
+          <Link href={'/'} className="flex items-center gap-2 lg:invisible">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src="/conix.png"

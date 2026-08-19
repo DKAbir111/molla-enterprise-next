@@ -1,7 +1,23 @@
-import jsPDF from 'jspdf'
-import autoTable from 'jspdf-autotable'
-import { Customer } from '@/types'
+import type { Customer } from '@/types'
 import { formatCurrency, formatDate } from '@/lib/utils'
+
+/**
+ * Customer and vendor statement PDFs.
+ *
+ * See `pdf.ts` for the shared table exporter and for why every caller must pass
+ * Latin text — jsPDF's built-in fonts carry no Bengali glyphs.
+ *
+ * jsPDF and its autotable plugin are loaded on demand. They are a heavy pair,
+ * and importing them at module scope put them in the customer and vendor detail
+ * bundles for every visitor rather than only those who press Download.
+ */
+async function loadPdf() {
+  const [{ default: jsPDF }, { default: autoTable }] = await Promise.all([
+    import('jspdf'),
+    import('jspdf-autotable'),
+  ])
+  return { jsPDF, autoTable }
+}
 
 interface PurchaseHistoryItem {
   id: string
@@ -20,12 +36,13 @@ interface ProductSummary {
   unit: string
 }
 
-export function generateCustomerPDF(
+export async function generateCustomerPDF(
   customer: Customer,
   purchaseHistory: PurchaseHistoryItem[],
   productSummary: Record<string, ProductSummary>,
   locale: string
 ) {
+  const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF()
   
   // Set font for Bengali support
@@ -130,69 +147,14 @@ export function generateCustomerPDF(
   doc.save(`customer-details-${customer.name}-${new Date().toISOString().split('T')[0]}.pdf`)
 }
 
-export function generateInvoicePDF(
-  customer: Customer,
-  invoice: any,
-  locale: string
-) {
-  const doc = new jsPDF()
-  
-  // Header
-  doc.setFontSize(20)
-  doc.setTextColor(40, 40, 40)
-  doc.text('INVOICE', 20, 20)
-  
-  doc.setFontSize(12)
-  doc.setTextColor(100, 100, 100)
-  doc.text(`Invoice #: ${invoice.id}`, 20, 35)
-  doc.text(`Date: ${formatDate(invoice.issueDate, locale)}`, 20, 45)
-  doc.text(`Due Date: ${formatDate(invoice.dueDate, locale)}`, 20, 55)
-  
-  // Customer Info
-  doc.setFontSize(14)
-  doc.setTextColor(40, 40, 40)
-  doc.text('Bill To:', 20, 75)
-  
-  doc.setFontSize(12)
-  doc.setTextColor(80, 80, 80)
-  doc.text(customer.name, 20, 90)
-  doc.text(customer.phone, 20, 100)
-  doc.text(customer.address, 20, 110)
-  
-  // Items Table
-  const itemsData = invoice.items.map((item: any) => [
-    item.productName,
-    item.quantity.toString(),
-    formatCurrency(item.price, locale),
-    formatCurrency(item.total, locale)
-  ])
-  
-  autoTable(doc, {
-    head: [['Product', 'Quantity', 'Price', 'Total']],
-    body: itemsData,
-    startY: 125,
-    styles: { fontSize: 10 },
-    headStyles: { fillColor: [66, 84, 178] },
-    margin: { top: 20 }
-  })
-  
-  // Total
-  const finalY = (doc as any).lastAutoTable.finalY || 200
-  doc.setFontSize(14)
-  doc.setTextColor(40, 40, 40)
-  doc.text(`Total: ${formatCurrency(invoice.total, locale)}`, 20, finalY + 20)
-  
-  // Save the PDF
-  doc.save(`invoice-${invoice.id}-${new Date().toISOString().split('T')[0]}.pdf`)
-}
-
 // Vendor details PDF (mirrors customer details but for purchases)
-export function generateVendorPDF(
+export async function generateVendorPDF(
   vendor: { name: string; phone?: string },
   purchaseHistory: Array<{ id: string; date: Date; productName: string; quantity: number; price: number; total: number; purchaseId: string }>,
   productSummary: Record<string, { quantity: number; transactions: number; totalAmount: number }>,
   locale: string
 ) {
+  const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF()
   doc.setFont('helvetica', 'normal')
 

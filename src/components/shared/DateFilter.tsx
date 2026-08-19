@@ -107,7 +107,7 @@ export function DateFilter({
     const from = formatDayKey(value!.start!, locale)
     const to = formatDayKey(value!.end!, locale)
     return from === to ? from : `${from} – ${to}`
-  }, [active, preset, value?.start, value?.end, locale, t])
+  }, [active, preset, value, locale, t])
 
   const panel = (
     <div className="max-h-[70vh] overflow-y-auto overscroll-contain p-2">

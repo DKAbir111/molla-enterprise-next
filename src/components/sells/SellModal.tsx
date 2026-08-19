@@ -18,8 +18,13 @@ import type { Order, OrderItem, Product, Customer } from '@/types'
 import { ShoppingCart, Edit3, Save, Plus, Minus, X, Search, User, MapPin, Phone, Package, TrendingUp } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils'
-import { listCustomers as fetchCustomers, listProducts as fetchProducts } from '@/lib/api'
-import { createSell as apiCreateSell, updateSell as apiUpdateSell, updateSellItems } from '@/lib/api/sell-api'
+import {
+  createSell as apiCreateSell,
+  listCustomers as fetchCustomers,
+  listProducts as fetchProducts,
+  updateSell as apiUpdateSell,
+  updateSellItems,
+} from '@/lib/api'
 import { normalizeProduct, normalizeCustomer, normalizeOrder } from '@/lib/api'
 
 type Mode = 'create' | 'edit'
@@ -32,7 +37,6 @@ interface SellModalProps {
 }
 
 export function SellModal({ open, mode, onClose, sell }: SellModalProps) {
-    const t = useTranslations('createOrder')
     const ts = useTranslations('sells')
     const locale = useLocale()
     const { customers, products, addSell, updateSell, addCustomer, addProduct } = useStore()
@@ -201,7 +205,7 @@ export function SellModal({ open, mode, onClose, sell }: SellModalProps) {
                 toast.success('Sell created successfully')
             }
             handleClose()
-        } catch (err) {
+        } catch {
             toast.error(isEdit ? 'Failed to update sell' : 'Failed to create sell')
         } finally {
             setIsLoading(false)

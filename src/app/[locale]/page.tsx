@@ -1,13 +1,12 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
-import { DateFilter } from '@/components/shared/DateFilter'
+import { useLocale, useTranslations } from 'next-intl'
+import { DateFilter } from '@/components/shared'
 import { RecentOrders } from '@/components/dashboard/RecentOrders'
 import { RecentBuys } from '@/components/dashboard/RecentBuys'
 import { DashboardStatsGrid } from '@/components/dashboard/DashboardStatsGrid'
 import nextDynamic from 'next/dynamic'
 const Charts = nextDynamic(() => import('@/components/dashboard/DashboardCharts').then(m => m.DashboardCharts), { ssr: false })
-import { useLocale } from 'next-intl'
 import { ArrowDownToLine, Clock, Eye, EyeOff, Package, Receipt, ShoppingCart, Truck, Users, Wallet } from 'lucide-react'
 import { formatCurrency } from '@/lib/utils'
 import React from 'react'

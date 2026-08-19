@@ -1,9 +1,7 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { AlertCircle, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,10 +10,10 @@ import { AuthShell } from '@/components/auth/AuthShell'
 import { PasswordStrength } from '@/components/auth/PasswordStrength'
 import { register as apiRegister } from '@/lib/api'
 import { toast } from 'sonner'
+import { Link, useRouter } from '@/i18n/navigation'
 
 export default function RegisterPage() {
   const router = useRouter()
-  const locale = useLocale()
   const t = useTranslations('auth')
   const [name, setName] = React.useState('')
   const [email, setEmail] = React.useState('')
@@ -39,7 +37,7 @@ export default function RegisterPage() {
       if (password !== confirmPassword) throw new Error(t('passwordsNoMatch'))
       await apiRegister({ name, email, password })
       toast.success(t('accountCreated'))
-      router.replace(`/${locale}/organization`)
+      router.replace('/organization')
     } catch (err: any) {
       const raw = err?.response?.data?.message || err?.message || t('registrationFailed')
       const msg = Array.isArray(raw) ? raw[0] : raw
@@ -54,7 +52,7 @@ export default function RegisterPage() {
     <AuthShell
       title={t('registerTitle')}
       subtitle={t('registerSubtitle')}
-      altAction={{ label: t('haveAccount'), href: `/${locale}/login`, cta: t('signIn') }}
+      altAction={{ label: t('haveAccount'), href: '/login', cta: t('signIn') }}
     >
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
         {error && (
@@ -151,11 +149,11 @@ export default function RegisterPage() {
         {/* Consent, as any sellable SaaS needs. */}
         <p className="text-center text-xs leading-relaxed text-subtle-foreground">
           {t('consentPre')}{' '}
-          <Link href={`/${locale}/terms`} className="text-primary underline-offset-4 hover:underline">
+          <Link href={'/terms'} className="text-primary underline-offset-4 hover:underline">
             {t('termsOfService')}
           </Link>{' '}
           {t('and')}{' '}
-          <Link href={`/${locale}/privacy`} className="text-primary underline-offset-4 hover:underline">
+          <Link href={'/privacy'} className="text-primary underline-offset-4 hover:underline">
             {t('privacyPolicy')}
           </Link>
           .

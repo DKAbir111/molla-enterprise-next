@@ -1,10 +1,11 @@
 'use client'
 import { useEffect, useState } from 'react'
-import { useRouter, usePathname, useSearchParams } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { Building, Globe, Bell, Palette, AlertTriangle } from 'lucide-react'
 import { updateOrganization } from '@/lib/api'
 import { useOrganizationStore } from '@/store/useOrganization'
 import { toast } from 'sonner'
+import { usePathname, useRouter } from '@/i18n/navigation'
 import {
   BusinessInfoSection,
   NotificationsSection,

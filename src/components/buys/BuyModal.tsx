@@ -1,8 +1,7 @@
 'use client'
 
 import * as React from 'react'
-import { useTranslations } from 'next-intl'
-import { useLocale } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -15,14 +14,18 @@ import {
 } from '@/components/ui/dialog'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { useStore } from '@/store/useStore'
-import type { Order, OrderItem, Product } from '@/types'
+import type { OrderItem, Product } from '@/types'
 import { ShoppingBag, Edit3, Save, Plus, Minus, X, Search, Building2, Package, DollarSign, Truck } from 'lucide-react'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils'
-import { listProducts as fetchProducts } from '@/lib/api'
-import { listVendors } from '@/lib/api/vendor-api'
-import { createBuy as apiCreateBuy, updateBuy as apiUpdateBuy, updateBuyItems } from '@/lib/api/buy-api'
-import { normalizeProduct, normalizeOrder } from '@/lib/api'
+import {
+  createBuy as apiCreateBuy,
+  listProducts as fetchProducts,
+  listVendors,
+  updateBuy as apiUpdateBuy,
+  updateBuyItems,
+} from '@/lib/api'
+import { normalizeProduct } from '@/lib/api'
 
 type Mode = 'create' | 'edit'
 
@@ -219,14 +222,13 @@ export function BuyModal({ open, mode, onClose, buy, onSaved }: BuyModalProps) {
                     // otherCost not persisted
                 }
                 const created = await apiCreateBuy<any>(payload)
-                const normalized = normalizeOrder(created)
                 // mark purchased products locally
                 orderItems.forEach(i => updateProduct(i.productId, { awaitingPurchase: false }))
                 toast.success('Purchase created successfully')
                 onSaved?.(created)
             }
             handleClose()
-        } catch (err) {
+        } catch {
             toast.error(isEdit ? 'Failed to update purchase' : 'Failed to create purchase')
         } finally {
             setIsLoading(false)

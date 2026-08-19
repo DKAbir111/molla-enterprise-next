@@ -2,8 +2,6 @@
 import { useState, useCallback, useEffect } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import {
     Table,
     TableBody,
@@ -12,45 +10,20 @@ import {
     TableHeader,
     TableRow,
 } from '@/components/ui/table'
-import { KeyRound, Shield, Plus, RefreshCw, Trash2 } from 'lucide-react'
-import { Save } from 'lucide-react'
-import {
-    changePassword as changePasswordRequest,
-    createTeamMember,
-    deleteTeamMember,
-    fetchLoginActivity,
-    listTeamMembers,
-    updateTeamMember,
-    type LoginActivityEntry,
-    type TeamMember,
-    type TeamMemberRole,
-    type TeamMembersResponse,
-} from '@/lib/api/user-api'
+import { KeyRound, Plus, RefreshCw, Save, Shield, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PasswordChangeDialog, InviteMemberDialog, DeleteMemberDialog } from './dialogs'
-
-interface OtherSectionProps {
-    onDeleteMember?: (member: TeamMember) => void
-    onDeleteMemberClick?: (member: TeamMember) => void
-}
-
-function generateSecurePassword(length = 12) {
-    const alphabet = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz0123456789!@#$%&*?'
-    const cryptoObj = typeof window !== 'undefined' ? window.crypto : undefined
-    const chars: string[] = []
-    if (cryptoObj?.getRandomValues) {
-        const values = new Uint32Array(length)
-        cryptoObj.getRandomValues(values)
-        for (let i = 0; i < length; i++) {
-            chars.push(alphabet[values[i] % alphabet.length])
-        }
-    } else {
-        for (let i = 0; i < length; i++) {
-            chars.push(alphabet[Math.floor(Math.random() * alphabet.length)])
-        }
-    }
-    return chars.join('')
-}
+import {
+  createTeamMember,
+  deleteTeamMember,
+  fetchLoginActivity,
+  listTeamMembers,
+  type LoginActivityEntry,
+  type TeamMember,
+  type TeamMemberRole,
+  type TeamMembersResponse,
+  updateTeamMember,
+} from '@/lib/api'
 
 function formatDateTime(value?: string | null) {
     if (!value) return 'Never'

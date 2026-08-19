@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { CheckCircle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { enableOrganization } from '@/lib/api/organization-api'
+import { useRouter } from '@/i18n/navigation'
+import { enableOrganization } from '@/lib/api'
 
 interface EnableOrgDialogProps {
     open: boolean

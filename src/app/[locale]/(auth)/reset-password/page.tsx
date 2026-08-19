@@ -1,9 +1,8 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { AlertCircle, ArrowLeft, Eye, EyeOff, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -12,10 +11,10 @@ import { AuthShell } from '@/components/auth/AuthShell'
 import { PasswordStrength } from '@/components/auth/PasswordStrength'
 import { resetPassword } from '@/lib/api'
 import { toast } from 'sonner'
+import { Link, useRouter } from '@/i18n/navigation'
 
 export default function ResetPasswordPage() {
   const router = useRouter()
-  const locale = useLocale()
   const t = useTranslations('auth')
   const search = useSearchParams()
   const token = search.get('token') || ''
@@ -38,7 +37,7 @@ export default function ResetPasswordPage() {
       if (newPassword !== confirmPassword) throw new Error(t('passwordsNoMatch'))
       await resetPassword({ token, newPassword })
       toast.success(t('passwordUpdated'))
-      setTimeout(() => router.replace(`/${locale}/login`), 800)
+      setTimeout(() => router.replace('/login'), 800)
     } catch (err: any) {
       const raw = err?.response?.data?.message || err?.message || t('resetFailed')
       const msg = Array.isArray(raw) ? raw[0] : raw
@@ -55,14 +54,14 @@ export default function ResetPasswordPage() {
       <AuthShell
         title={t('invalidLinkTitle')}
         subtitle={t('invalidLinkSubtitle')}
-        altAction={{ label: t('rememberedIt'), href: `/${locale}/login`, cta: t('signIn') }}
+        altAction={{ label: t('rememberedIt'), href: '/login', cta: t('signIn') }}
       >
         <div className="space-y-6">
           <div className="flex items-start gap-2 rounded-lg border border-danger bg-danger-subtle px-3 py-2.5 text-sm text-foreground">
             <AlertCircle className="mt-0.5 h-4 w-4 shrink-0 text-danger" aria-hidden="true" />
             <span>{t('invalidLinkBody')}</span>
           </div>
-          <Link href={`/${locale}/forgot-password`}>
+          <Link href={'/forgot-password'}>
             <Button size="lg" className="w-full">{t('requestNewLink')}</Button>
           </Link>
         </div>
@@ -74,7 +73,7 @@ export default function ResetPasswordPage() {
     <AuthShell
       title={t('resetTitle')}
       subtitle={t('resetSubtitle')}
-      altAction={{ label: t('rememberedIt'), href: `/${locale}/login`, cta: t('signIn') }}
+      altAction={{ label: t('rememberedIt'), href: '/login', cta: t('signIn') }}
     >
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
         {error && (
@@ -142,7 +141,7 @@ export default function ResetPasswordPage() {
         </Button>
 
         <Link
-          href={`/${locale}/login`}
+          href={'/login'}
           className="inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
         >
           <ArrowLeft className="h-4 w-4" aria-hidden="true" />

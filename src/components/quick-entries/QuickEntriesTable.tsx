@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { Button } from '@/components/ui/button'
-import { QuickTransaction } from './types'
+import { QuickTransaction } from '@/types/quick-entry'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { ArrowDownRight, ArrowUpRight, Trash2 } from 'lucide-react'
 

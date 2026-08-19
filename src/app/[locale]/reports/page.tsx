@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 
 /**
  * Reports merged into Accounts — the two screens showed overlapping views of
@@ -10,5 +10,5 @@ export default async function ReportsRedirect({
   params: Promise<{ locale: string }>
 }) {
   const { locale } = await params
-  redirect(`/${locale}/accounts?tab=reports`)
+  redirect({ href: '/accounts?tab=reports', locale })
 }

@@ -1,9 +1,8 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 'use client'
 
 import { useState, useEffect, useRef } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useParams } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,7 +16,6 @@ import {
 import { useStore } from '@/store/useStore'
 import { CustomerAccountCard } from '@/components/payments/CustomerAccountCard'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { useLocale } from 'next-intl'
 import {
   ArrowLeft,
   Download,
@@ -31,9 +29,10 @@ import {
   ChevronLeft
 } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
-import { generateCustomerPDF } from '@/lib/pdfGenerator'
-import { listSells as fetchSells, getCustomer as apiGetCustomer } from '@/lib/api'
-import { normalizeOrder, normalizeCustomer } from '@/lib/api'
+import { toast } from 'sonner'
+import { generateCustomerPDF } from '@/lib/pdf-statements'
+import { getCustomer as apiGetCustomer, listSells as fetchSells, normalizeCustomer, normalizeOrder } from '@/lib/api'
+import { useRouter } from '@/i18n/navigation'
 
 interface PurchaseHistoryItem {
   id: string
@@ -50,7 +49,7 @@ export default function CustomerDetailsPage() {
   const locale = useLocale()
   const params = useParams()
   const router = useRouter()
-  const { customers, updateCustomer, addCustomer } = useStore()
+  const { customers, addCustomer } = useStore()
   const [purchaseHistory, setPurchaseHistory] = useState<PurchaseHistoryItem[]>([])
   const [loadingCustomer, setLoadingCustomer] = useState(false)
   const printRef = useRef<HTMLDivElement>(null)
@@ -99,9 +98,13 @@ export default function CustomerDetailsPage() {
         // Update aggregates only if they changed to prevent re-renders loops
         const totalOrders = customerOrders.length
         const totalSpent = history.reduce((sum, h) => sum + h.total, 0)
-        const current = customers.find(c => c.id === customerId)
+        // Read/write through the store imperatively — naming `customers`
+        // and `updateCustomer` as dependencies would re-run this effect on
+        // the very update it performs.
+        const store = useStore.getState()
+        const current = store.customers.find(c => c.id === customerId)
         if (current && (current.totalOrders !== totalOrders || current.totalSpent !== totalSpent)) {
-          updateCustomer(customerId, { totalOrders, totalSpent })
+          store.updateCustomer(customerId, { totalOrders, totalSpent })
         }
       })
       .catch(() => {})
@@ -131,9 +134,14 @@ export default function CustomerDetailsPage() {
     documentTitle: `Customer Details - ${customer?.name}`,
   })
 
-  const handleDownloadPDF = () => {
-    if (customer) {
-      generateCustomerPDF(customer, purchaseHistory, productSummary, locale)
+  // Async because jsPDF is loaded on demand; a rejection here would otherwise
+  // be an unhandled promise and the button would look like it did nothing.
+  const handleDownloadPDF = async () => {
+    if (!customer) return
+    try {
+      await generateCustomerPDF(customer, purchaseHistory, productSummary, locale)
+    } catch {
+      toast.error(t('downloadFailed'))
     }
   }
 
@@ -150,7 +158,7 @@ export default function CustomerDetailsPage() {
             <>
               <h2 className="text-xl font-semibold text-foreground mb-2">Customer Not Found</h2>
               <p className="text-muted-foreground mb-4">The customer you&apos;re looking for doesn&apos;t exist.</p>
-              <Button onClick={() => router.push(`/${locale}/customers`)}>
+              <Button onClick={() => router.push('/customers')}>
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Customers
               </Button>

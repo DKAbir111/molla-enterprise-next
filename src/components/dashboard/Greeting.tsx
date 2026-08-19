@@ -1,12 +1,11 @@
 'use client'
 
 import React from 'react'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { useOrganizationStore } from '@/store/useOrganization'
 
 export function Greeting() {
   const t = useTranslations('greeting')
-  const locale = useLocale()
   const { organization, fetchOrganization } = useOrganizationStore()
 
   React.useEffect(() => {

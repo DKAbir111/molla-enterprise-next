@@ -1,10 +1,10 @@
 'use client'
 
 import { useState, useEffect, useCallback } from 'react'
-import { useSearchParams, useRouter, usePathname } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { ReportsPanel } from '@/components/reports/ReportsPanel'
-import { cn } from '@/lib/utils'
-import { useTranslations } from 'next-intl'
+import { cn, formatCurrency, formatDate } from '@/lib/utils'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -26,8 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { formatCurrency, formatDate } from '@/lib/utils'
-import { useLocale } from 'next-intl'
 import { TrendingUp, TrendingDown, DollarSign, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import {
   AreaChart,
@@ -41,9 +39,9 @@ import {
   Pie,
   Cell,
 } from 'recharts'
-import { getAccountsSummary } from '@/lib/api'
-import { createTransaction } from '@/lib/api/transaction-api'
+import { createTransaction, getAccountsSummary } from '@/lib/api'
 import { toast } from 'sonner'
+import { usePathname, useRouter } from '@/i18n/navigation'
 
 type AccountsSummary = {
   totals: { income: number; expenses: number; net: number }

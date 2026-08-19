@@ -14,7 +14,7 @@ import {
 } from '@/components/ui/dialog'
 import { Building2, Edit3, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
-import { createVendor, updateVendor, uploadVendorAvatar } from '@/lib/api/vendor-api'
+import { createVendor, updateVendor, uploadVendorAvatar } from '@/lib/api'
 
 type Mode = 'create' | 'edit'
 

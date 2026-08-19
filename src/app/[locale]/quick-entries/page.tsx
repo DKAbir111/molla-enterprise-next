@@ -4,12 +4,12 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useLocale } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { createTransaction, deleteTransaction, listTransactions } from '@/lib/api/transaction-api'
 import { QuickEntriesHeader } from '@/components/quick-entries/QuickEntriesHeader'
 import { QuickEntriesStats } from '@/components/quick-entries/QuickEntriesStats'
 import { QuickEntriesTable } from '@/components/quick-entries/QuickEntriesTable'
 import { QuickEntryDialog } from '@/components/quick-entries/QuickEntryDialog'
-import { QuickEntryForm, QuickLine, QuickTransaction } from '@/components/quick-entries/types'
+import { QuickEntryForm, QuickLine, QuickTransaction } from '@/types/quick-entry'
+import { createTransaction, deleteTransaction, listTransactions } from '@/lib/api'
 
 const defaultForm = (): QuickEntryForm => ({
   type: 'income',

@@ -1,8 +1,7 @@
 'use client'
 
 import { useTranslations } from 'next-intl'
-import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { Link, usePathname } from '@/i18n/navigation'
 import { cn } from '@/lib/utils'
 import React from 'react'
 import { useOrganizationStore } from '@/store/useOrganization'
@@ -71,10 +70,9 @@ const NAV_GROUPS = [
  * The trailing-slash check matters: a plain `startsWith` would light up
  * /products for a hypothetical /products-archive.
  */
-function isRouteActive(pathname: string, href: string, base: string) {
-  if (href === '/') return pathname === base || pathname === `${base}/`
-  const full = `${base}${href}`
-  return pathname === full || pathname.startsWith(`${full}/`)
+function isRouteActive(pathname: string, href: string) {
+  if (href === '/') return pathname === '/'
+  return pathname === href || pathname.startsWith(`${href}/`)
 }
 
 type SidebarProps = {
@@ -84,8 +82,6 @@ type SidebarProps = {
 export function Sidebar({ onNavigate }: SidebarProps) {
   const pathname = usePathname()
   const t = useTranslations('nav')
-  const locale = pathname.split('/')[1]
-  const base = `/${locale}`
   const { organization, fetchOrganization } = useOrganizationStore()
 
   React.useEffect(() => {
@@ -129,13 +125,12 @@ export function Sidebar({ onNavigate }: SidebarProps) {
 
             <ul className="space-y-1">
               {group.items.map((item) => {
-                const href = `${base}${item.href === '/' ? '' : item.href}`
-                const active = isRouteActive(pathname, item.href, base)
+                const active = isRouteActive(pathname, item.href)
 
                 return (
                   <li key={item.key}>
                     <Link
-                      href={href}
+                      href={item.href}
                       onClick={onNavigate}
                       aria-current={active ? 'page' : undefined}
                       className={cn(

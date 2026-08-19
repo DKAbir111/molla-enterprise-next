@@ -11,8 +11,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { type TeamMemberRole } from '@/lib/api/user-api'
 import { toast } from 'sonner'
+import { type TeamMemberRole } from '@/lib/api'
 
 interface InviteMemberDialogProps {
     open: boolean

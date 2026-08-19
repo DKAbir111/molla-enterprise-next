@@ -1,32 +1,25 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { useStore } from '@/store/useStore'
 import { formatCurrency } from '@/lib/utils'
-import { listTransactions, listSells, normalizeOrder } from '@/lib/api'
-import { listBuys } from '@/lib/api/buy-api'
-import { DateFilter } from '@/components/shared/DateFilter'
+import { listBuys, listCustomers, listProducts, listSells, listTransactions, normalizeCustomer, normalizeOrder, normalizeProduct } from '@/lib/api'
+import { DateFilter } from '@/components/shared'
 import { DailyReport } from '@/components/reports/DailyReport'
 import { useOrganizationStore } from '@/store/useOrganization'
 import type { DateRange } from '@/lib/date-range'
 import { isWithinRange, formatDayKey } from '@/lib/date-range'
 import { exportTablePdf, plainAmount, plainNumber } from '@/lib/pdf'
-import { listProducts } from '@/lib/api/product-api'
-import { listCustomers } from '@/lib/api/customer-api'
-import { normalizeProduct, normalizeCustomer } from '@/lib/api'
 import { toast } from 'sonner'
-import { useLocale } from 'next-intl'
 import { FileText, BarChart3, PieChart, TrendingUp } from 'lucide-react'
 import React from 'react'
+import { grandTotalOf } from '@/lib/totals'
 import {
   AreaChart,
   Area,
   BarChart,
   Bar,
-  LineChart,
-  Line,
   PieChart as RePieChart,
   Pie,
   Cell,
@@ -35,7 +28,6 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  Legend,
 } from 'recharts'
 
 /**
@@ -49,7 +41,6 @@ import {
 export function ReportsPanel() {
   const t = useTranslations('reports')
   const locale = useLocale()
-  const { products, customers, transactions } = useStore()
 
   // Derived state
   const [revenueTrend, setRevenueTrend] = React.useState<{ month: string; total: number }[]>([])
@@ -165,11 +156,8 @@ export function ReportsPanel() {
     : 'All time'
   const stamp = range.start && range.end ? `${range.start}_${range.end}` : 'all-time'
 
-  /** Line items + transport - discount. The same definition the rest of the app uses. */
-  const grand = (o: any) => {
-    const items = (o?.items || []).reduce((s: number, it: any) => s + Number(it?.total || 0), 0)
-    return Math.max(0, items + Number(o?.transportTotal || 0) - Number(o?.discount || 0))
-  }
+  /** Line items + transport - discount. Shared with the rest of the app. */
+  const grand = grandTotalOf
 
   const runReport = async (key: string, build: () => Parameters<typeof exportTablePdf>[0] | null) => {
     setBusyReport(key)

@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils'
 import { toLocalISODate } from '@/lib/date-range'
-import { receivePayment, payVendor, type PaymentMethod } from '@/lib/api/payment-api'
+import { type PaymentMethod, payVendor, receivePayment } from '@/lib/api'
 
 const METHODS: PaymentMethod[] = ['cash', 'bank', 'mobile', 'cheque', 'other']
 

@@ -1,17 +1,17 @@
 'use client'
 
 import * as React from 'react'
-import Link from 'next/link'
 import { useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
 import { HandCoins, Clock } from 'lucide-react'
 import { formatCurrency, formatDate, formatOrderCode, cn } from '@/lib/utils'
-import { listSells } from '@/lib/api/sell-api'
-import { normalizeOrder } from '@/lib/api'
-import { StatRail, StatTile } from '@/components/shared/StatRail'
+import { listSells, normalizeOrder } from '@/lib/api'
+import { StatRail, StatTile } from '@/components/shared'
 import { ReceivePaymentDialog } from './ReceivePaymentDialog'
+import { Link } from '@/i18n/navigation'
+import { orderTotals } from '@/lib/totals'
 
 /**
  * The customer's running account: what they owe, which orders are still open,
@@ -54,10 +54,8 @@ export function CustomerAccountCard({
     return (orders ?? [])
       .filter((o) => o.status !== 'cancelled')
       .map((o) => {
-        const items = (o.items || []).reduce((s: number, it: any) => s + Number(it.total || 0), 0)
-        const grand = Math.max(0, items + Number(o.transportTotal || 0) - Number(o.discount || 0))
-        const paid = Number(o.paidAmount || 0)
-        return { ...o, grand, paid, due: Math.max(0, grand - paid) }
+        const { grand, paid, due } = orderTotals(o)
+        return { ...o, grand, paid, due }
       })
   }, [orders])
 
@@ -116,7 +114,7 @@ export function CustomerAccountCard({
                 {openRows.map((o) => (
                   <TableRow key={o.id}>
                     <TableCell className="font-medium" data-primary="">
-                      <Link href={`/${locale}/sells/${o.id}`} className="hover:text-info">
+                      <Link href={`/sells/${o.id}`} className="hover:text-info">
                         {formatOrderCode(o.id, o.createdAt)}
                       </Link>
                     </TableCell>

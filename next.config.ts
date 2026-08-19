@@ -14,11 +14,11 @@ const nextConfig: NextConfig = {
   typescript: {
     ignoreBuildErrors: false,
   },
-  // Still skipped, because the UI carried over roughly twenty pre-existing lint
-  // errors (unused imports, mostly) that predate this project and were not part
-  // of the port. Worth clearing, then flipping this to false.
+  // The ~28 carried-over lint errors have been cleared, so the build enforces
+  // lint again. Keep it that way: unused imports and dead props are how the
+  // last set accumulated unnoticed.
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
 }
 

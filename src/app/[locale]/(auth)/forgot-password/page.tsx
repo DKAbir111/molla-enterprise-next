@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { useLocale, useTranslations } from 'next-intl'
+import { useTranslations } from 'next-intl'
 import { AlertCircle, ArrowLeft, Loader2, MailCheck } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -10,9 +9,9 @@ import { Label } from '@/components/ui/label'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { forgotPassword } from '@/lib/api'
 import { toast } from 'sonner'
+import { Link } from '@/i18n/navigation'
 
 export default function ForgotPasswordPage() {
-  const locale = useLocale()
   const t = useTranslations('auth')
   const [email, setEmail] = React.useState('')
   const [loading, setLoading] = React.useState(false)
@@ -49,7 +48,7 @@ export default function ForgotPasswordPage() {
     <AuthShell
       title={sent ? t('checkEmail') : t('forgotTitle')}
       subtitle={sent ? undefined : t('forgotSubtitle')}
-      altAction={{ label: t('rememberedIt'), href: `/${locale}/login`, cta: t('signIn') }}
+      altAction={{ label: t('rememberedIt'), href: '/login', cta: t('signIn') }}
     >
       {sent ? (
         <div className="space-y-6">
@@ -68,7 +67,7 @@ export default function ForgotPasswordPage() {
               {t('devShortcut')}{' '}
               <Link
                 className="text-primary underline underline-offset-4"
-                href={`/${locale}/reset-password?token=${devToken}`}
+                href={`/reset-password?token=${devToken}`}
               >
                 {t('openResetPage')}
               </Link>
@@ -76,7 +75,7 @@ export default function ForgotPasswordPage() {
           )}
 
           <Link
-            href={`/${locale}/login`}
+            href={'/login'}
             className="inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
@@ -120,7 +119,7 @@ export default function ForgotPasswordPage() {
           </Button>
 
           <Link
-            href={`/${locale}/login`}
+            href={'/login'}
             className="inline-flex items-center gap-2 text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />

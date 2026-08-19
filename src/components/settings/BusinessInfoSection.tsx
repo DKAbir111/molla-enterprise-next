@@ -1,11 +1,9 @@
 'use client'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Camera, Mail, Phone, MapPin, Save } from 'lucide-react'
-import { updateOrganization } from '@/lib/api'
-import { toast } from 'sonner'
 
 interface BusinessInfoSectionProps {
     businessInfo: {

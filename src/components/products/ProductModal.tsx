@@ -2,7 +2,14 @@
 
 import * as React from 'react'
 import { useTranslations, useLocale } from 'next-intl'
-import { getMyOrganizationSettings } from '@/lib/api'
+import {
+  createDryingGain,
+  getMyOrganizationSettings,
+  listDryingGains,
+  normalizeDryingGain,
+  updateProduct as apiUpdateProduct,
+  uploadProductImage,
+} from '@/lib/api'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -20,10 +27,7 @@ import type { Product } from '@/types'
 import { Plus, Pencil, Save, X } from 'lucide-react'
 import { toast } from 'sonner'
 import { createProduct as apiCreateProduct, normalizeProduct } from '@/lib/api'
-import { updateProduct as apiUpdateProduct, uploadProductImage } from '@/lib/api/product-api'
 import { formatCurrency } from '@/lib/utils'
-import { listDryingGains, createDryingGain } from '@/lib/api/drying-gain-api'
-import { normalizeDryingGain } from '@/lib/api/normalize'
 import type { DryingGain } from '@/types'
 
 type Mode = 'create' | 'edit'
@@ -184,7 +188,7 @@ export function ProductModal({ open, mode, onClose, product }: ProductModalProps
         toast.success('Product added')
         handleClose()
       }
-    } catch (err) {
+    } catch {
       toast.error(isEdit ? 'Failed to update product' : 'Failed to add product')
     } finally {
       setIsLoading(false)
@@ -224,6 +228,10 @@ export function ProductModal({ open, mode, onClose, product }: ProductModalProps
                     aria-label={t('uploadImage')}
                   >
                     {imagePreview ? (
+                      /* A local object URL for the file being uploaded, not a
+                         remote asset — next/image cannot optimise a blob: URL
+                         and would need `unoptimized` anyway. */
+                      /* eslint-disable-next-line @next/next/no-img-element */
                       <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
                     ) : (
                       <span className="text-sm text-subtle-foreground">{t('noImage')}</span>

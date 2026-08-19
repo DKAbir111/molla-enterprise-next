@@ -1,5 +1,5 @@
-import Link from 'next/link'
 import { FileText, TriangleAlert } from 'lucide-react'
+import { Link } from '@/i18n/navigation'
 
 /**
  * Deliberate placeholder.
@@ -45,7 +45,7 @@ export function LegalPlaceholder({
 
         <div className="mt-8">
           <Link
-            href="../login"
+            href="/login"
             className="text-sm font-medium text-primary underline-offset-4 hover:underline"
           >
             ← Back to sign in

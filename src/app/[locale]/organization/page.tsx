@@ -1,7 +1,6 @@
 'use client'
 
 import React from 'react'
-import { useRouter } from 'next/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import { AlertCircle, Building2, ImagePlus, Loader2, X } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -10,6 +9,7 @@ import { Label } from '@/components/ui/label'
 import { createOrganization } from '@/lib/api'
 import { toast } from 'sonner'
 import { useOrganizationStore } from '@/store/useOrganization'
+import { useRouter } from '@/i18n/navigation'
 
 export default function OrganizationPage() {
   const router = useRouter()
@@ -34,13 +34,13 @@ export default function OrganizationPage() {
         try {
           const org = await fetchOrganization()
           if (!active) return
-          if (org && org.id) router.replace(`/${locale}`)
+          if (org && org.id) router.replace('/')
           else setLoading(false)
         } catch {
           if (active) setLoading(false)
         }
       } else if (organization && organization.id) {
-        router.replace(`/${locale}`)
+        router.replace('/')
       } else {
         setLoading(false)
       }
@@ -71,7 +71,7 @@ export default function OrganizationPage() {
       const created = await createOrganization<any>({ name, email, phone, address, logoFile })
       setOrganization(created)
       toast.success(t('created'))
-      router.replace(`/${locale}`)
+      router.replace('/')
     } catch (err: any) {
       const raw = err?.response?.data?.message || err?.message || t('createFailed')
       const msg = Array.isArray(raw) ? raw[0] : raw

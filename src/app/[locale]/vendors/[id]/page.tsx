@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
+import { useParams } from 'next/navigation'
 import { useTranslations, useLocale } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -9,8 +9,11 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { ChevronLeft, Package, FileText, Calendar } from 'lucide-react'
 import { useReactToPrint } from 'react-to-print'
-import { listBuys } from '@/lib/api/buy-api'
-import { generateVendorPDF } from '@/lib/pdfGenerator'
+import { toast } from 'sonner'
+import { generateVendorPDF } from '@/lib/pdf-statements'
+import { useRouter } from '@/i18n/navigation'
+import { grandTotalOf } from '@/lib/totals'
+import { listBuys } from '@/lib/api'
 
 type PurchaseHistoryItem = {
   id: string
@@ -37,6 +40,16 @@ export default function VendorDetailsPage() {
   const printRef = useRef<HTMLDivElement>(null)
   const handlePrint = useReactToPrint({ contentRef: printRef, documentTitle: `Vendor_${vendorName}` })
 
+  // Async because jsPDF is loaded on demand; a rejection here would otherwise
+  // be an unhandled promise and the button would look like it did nothing.
+  const handleDownloadPDF = async () => {
+    try {
+      await generateVendorPDF({ name: vendorName, phone: vendorPhone }, history, productSummary, locale)
+    } catch {
+      toast.error(t('downloadFailed'))
+    }
+  }
+
   useEffect(() => {
     let mounted = true
     listBuys<any[]>()
@@ -49,11 +62,7 @@ export default function VendorDetailsPage() {
         all.forEach(b => {
           const d = b.createdAt ? new Date(b.createdAt) : new Date()
           if (!earliest || d < earliest) earliest = d
-          const itemsTotal = (b.items || []).reduce((s: number, it: any) => s + Number(it.total || 0), 0)
-          const discount = Number(b.discount || 0)
-          const transport = Number(b.transportTotal || 0)
-          const grand = Math.max(0, itemsTotal + transport - discount)
-          spent += grand
+          spent += grandTotalOf(b)
           ;(b.items || []).forEach((it: any) => {
             hist.push({
               id: `${b.id}-${it.productId}`,
@@ -90,7 +99,7 @@ export default function VendorDetailsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push(`/${locale}/vendors`)} className="flex items-center gap-1">
+          <Button variant="ghost" onClick={() => router.push('/vendors')} className="flex items-center gap-1">
             <ChevronLeft className="h-5 w-5" /> Back
           </Button>
         </div>
@@ -100,7 +109,7 @@ export default function VendorDetailsPage() {
         </div>
         <div className="flex gap-2">
           <Button onClick={handlePrint} variant="outline">{t('print')}</Button>
-          <Button onClick={() => generateVendorPDF({ name: vendorName, phone: vendorPhone }, history, productSummary, locale as string)}>{t('downloadPDF')}</Button>
+          <Button onClick={handleDownloadPDF}>{t('downloadPDF')}</Button>
         </div>
       </div>
 

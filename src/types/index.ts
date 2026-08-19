@@ -49,6 +49,17 @@ export interface Customer {
   createdAt: Date
 }
 
+/** Mirrors the Prisma `Vendor` model. The vendors screen typed this as `any`. */
+export interface Vendor {
+  id: string
+  name: string
+  phone: string
+  email?: string
+  address?: string
+  avatarUrl?: string
+  createdAt?: string | Date
+}
+
 export type OrderStatus = 'pending' | 'processing' | 'delivered' | 'cancelled'
 
 export interface OrderItem {
@@ -77,46 +88,6 @@ export interface Order {
   transportTotal?: number
 }
 
-export type InvoiceStatus = 'paid' | 'unpaid' | 'partial'
-
-export interface Invoice {
-  id: string
-  invoiceNo: string
-  orderId: string
-  customerId: string
-  customerName: string
-  items: OrderItem[]
-  amount: number
-  status: InvoiceStatus
-  dueDate: Date
-  issueDate: Date
-  createdAt: Date
-  paidAt?: Date
-}
-
-export type DeliveryStatus = 'pending' | 'enRoute' | 'delivered'
-
-export interface Delivery {
-  deliveryDate: string | number | Date
-  id: string
-  orderId: string
-  truckId: string
-  driverId: string
-  destination: string
-  status: DeliveryStatus
-  estimatedTime?: Date
-  completedAt?: Date
-  createdAt: Date
-}
-
-export interface Truck {
-  id: string
-  number: string
-  driver: string
-  capacity: number
-  status: 'available' | 'busy' | 'maintenance'
-}
-
 export type TransactionType = 'income' | 'expense'
 
 export interface Transaction {
@@ -125,17 +96,6 @@ export interface Transaction {
   type: TransactionType
   amount: number
   category: string
-  date: Date
-}
-
-export interface OilSale {
-  id: string
-  product: string
-  quantity: number
-  price: number
-  total: number
-  customerId: string
-  customerName: string
   date: Date
 }
 

@@ -1,14 +1,16 @@
 'use client'
 
 import React from 'react'
-import { usePathname, useRouter } from 'next/navigation'
-import { useLocale } from 'next-intl'
+import { usePathname, useRouter } from '@/i18n/navigation'
 import { Loader2 } from 'lucide-react'
-import { Header } from './header'
-import { Sidebar } from './sidebar'
+import { Header } from './Header'
+import { Sidebar } from './Sidebar'
 import { BottomNav } from './BottomNav'
 import { getAuthToken, logout } from '@/lib/api'
-import { useTheme } from '@/store/useTheme'
+// Side-effect import: the theme store applies the saved `theme-*` class to
+// <html> when the module first loads. Nothing in this component reads the
+// value, so there is no hook call — it used to destructure `theme` and drop it.
+import '@/store/useTheme'
 import { Toaster } from 'sonner'
 import { useOrganizationStore } from '@/store/useOrganization'
 
@@ -37,25 +39,24 @@ function AppToaster() {
 }
 
 export function AppShell({ children }: { children: React.ReactNode }) {
+  // `usePathname` here is the next-intl one, so it is already locale-stripped —
+  // these compare against plain app paths rather than `/en/...`.
   const pathname = usePathname()
-  const locale = useLocale()
   const router = useRouter()
-  const { theme } = useTheme()
   const { organization, fetchOrganization } = useOrganizationStore()
 
-  const base = `/${locale}`
   // Public routes: no auth gate, no sidebar/header. Legal pages belong here —
   // they are linked from the signup consent line, before any account exists.
   const authRoutes = new Set([
-    `${base}/login`,
-    `${base}/register`,
-    `${base}/forgot-password`,
-    `${base}/reset-password`,
-    `${base}/terms`,
-    `${base}/privacy`,
+    '/login',
+    '/register',
+    '/forgot-password',
+    '/reset-password',
+    '/terms',
+    '/privacy',
   ])
   const isAuthRoute = authRoutes.has(pathname)
-  const isOrgRoute = pathname === `${base}/organization`
+  const isOrgRoute = pathname === '/organization'
   const shouldHide = isAuthRoute || isOrgRoute
 
   // The token lives in a browser-only store, so it's unreadable during SSR. To
@@ -82,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (!mounted || isAuthRoute) return
 
     if (!token) {
-      router.replace(`/${locale}/login`)
+      router.replace('/login')
       return
     }
 
@@ -90,9 +91,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       const status = err?.response?.status
       if (status === 401 || status === 403) {
         try { logout() } catch {}
-        router.replace(`/${locale}/login`)
+        router.replace('/login')
       } else if (!isOrgRoute) {
-        router.replace(`/${locale}/organization`)
+        router.replace('/organization')
       }
     }
 
@@ -100,7 +101,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       fetchOrganization()
         .then((org) => {
           if (!org && !isOrgRoute) {
-            router.replace(`/${locale}/organization`)
+            router.replace('/organization')
           }
         })
         .catch(handleAuthError)
@@ -108,9 +109,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     }
 
     if (!organization && !isOrgRoute) {
-      router.replace(`/${locale}/organization`)
+      router.replace('/organization')
     }
-  }, [mounted, isAuthRoute, isOrgRoute, organization, fetchOrganization, router, locale, token])
+  }, [mounted, isAuthRoute, isOrgRoute, organization, fetchOrganization, router, token])
 
   // Auth pages own their full-bleed layout (AuthShell renders its own brand
   // panel), so they must not be boxed into a centred container.

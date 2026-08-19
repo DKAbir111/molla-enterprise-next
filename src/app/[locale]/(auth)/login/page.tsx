@@ -1,9 +1,8 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { useLocale, useTranslations } from 'next-intl'
+import { useSearchParams } from 'next/navigation'
+import { useTranslations } from 'next-intl'
 import { AlertCircle, Eye, EyeOff, Info, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
@@ -11,10 +10,10 @@ import { Label } from '@/components/ui/label'
 import { AuthShell } from '@/components/auth/AuthShell'
 import { login as apiLogin } from '@/lib/api'
 import { toast } from 'sonner'
+import { Link, useRouter } from '@/i18n/navigation'
 
 export default function LoginPage() {
   const router = useRouter()
-  const locale = useLocale()
   const t = useTranslations('auth')
   const searchParams = useSearchParams()
   // Set by the 401 interceptor so an expired session explains itself here
@@ -40,7 +39,7 @@ export default function LoginPage() {
       toast.success(t('signedIn'))
       // Send them back where the expired session interrupted them.
       if (hasOrg && from && from.startsWith('/')) router.replace(from)
-      else router.replace(`/${locale}${hasOrg ? '' : '/organization'}`)
+      else router.replace(hasOrg ? '/' : '/organization')
     } catch (err: any) {
       const raw = err?.response?.data?.message || err?.message || t('loginFailed')
       const msg = Array.isArray(raw) ? raw[0] : raw
@@ -55,7 +54,7 @@ export default function LoginPage() {
     <AuthShell
       title={t('loginTitle')}
       subtitle={t('loginSubtitle')}
-      altAction={{ label: t('newHere'), href: `/${locale}/register`, cta: t('createAccount') }}
+      altAction={{ label: t('newHere'), href: '/register', cta: t('createAccount') }}
     >
       <form onSubmit={onSubmit} className="space-y-5" noValidate>
         {sessionExpired && !error && (
@@ -95,7 +94,7 @@ export default function LoginPage() {
           <div className="flex items-baseline justify-between">
             <Label htmlFor="password">{t('password')}</Label>
             <Link
-              href={`/${locale}/forgot-password`}
+              href={'/forgot-password'}
               className="text-xs font-medium text-primary underline-offset-4 hover:underline"
             >
               {t('forgotPassword')}

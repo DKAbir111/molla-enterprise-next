@@ -3,9 +3,9 @@
 import * as React from 'react'
 import { useLocale, useTranslations } from 'next-intl'
 import { DuesList, type DueRow } from '@/components/payments/DuesList'
-import { StatRail, StatTile } from '@/components/shared/StatRail'
+import { StatRail, StatTile } from '@/components/shared'
 import { formatCurrency, formatDate } from '@/lib/utils'
-import { listPayables, listReceivables } from '@/lib/api/payment-api'
+import { listPayables, listReceivables } from '@/lib/api'
 
 /**
  * One side of the dues ledger as a full page.

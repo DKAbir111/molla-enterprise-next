@@ -11,8 +11,8 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { changePassword as changePasswordRequest } from '@/lib/api/user-api'
 import { toast } from 'sonner'
+import { changePassword as changePasswordRequest } from '@/lib/api'
 
 interface PasswordChangeDialogProps {
     open: boolean

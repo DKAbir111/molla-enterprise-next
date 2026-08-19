@@ -1,8 +1,7 @@
 'use client'
 
 import React from 'react'
-import Link from 'next/link'
-import { usePathname, useRouter } from 'next/navigation'
+import { Link, usePathname, useRouter } from '@/i18n/navigation'
 import { useLocale, useTranslations } from 'next-intl'
 import {
   LayoutDashboard,
@@ -49,10 +48,9 @@ const MORE_LINKS = [
 ] as const
 
 /** True when `pathname` is the tab's route or a detail page beneath it. */
-function isRouteActive(pathname: string, href: string, base: string) {
-  const full = `${base}${href === '/' ? '' : href}`
-  if (href === '/') return pathname === base || pathname === `${base}/`
-  return pathname === full || pathname.startsWith(`${full}/`)
+function isRouteActive(pathname: string, href: string) {
+  if (href === '/') return pathname === '/'
+  return pathname === href || pathname.startsWith(`${href}/`)
 }
 
 export function BottomNav() {
@@ -63,8 +61,7 @@ export function BottomNav() {
   const [sheetOpen, setSheetOpen] = React.useState(false)
   const { organization } = useOrganizationStore()
 
-  const base = `/${locale}`
-  const moreActive = MORE_LINKS.some((l) => isRouteActive(pathname, l.href, base))
+  const moreActive = MORE_LINKS.some((l) => isRouteActive(pathname, l.href))
 
   // A route change means the sheet has served its purpose.
   React.useEffect(() => { setSheetOpen(false) }, [pathname])
@@ -83,21 +80,22 @@ export function BottomNav() {
     }
   }, [sheetOpen])
 
+  // Same route, other language. `pathname` is locale-stripped, so the router
+  // rebuilds the prefix from the `locale` option instead of us string-swapping
+  // it — which broke on any path that contained the locale twice.
   const switchLocale = () => {
-    const next = locale === 'en' ? 'bn' : 'en'
-    router.push(pathname.replace(`/${locale}`, `/${next}`))
+    router.replace(pathname, { locale: locale === 'en' ? 'bn' : 'en' })
   }
 
   return (
     <>
       {sheetOpen && (
         <MoreSheet
-          base={base}
           pathname={pathname}
           orgName={organization?.name}
           onClose={() => setSheetOpen(false)}
           onSwitchLocale={switchLocale}
-          onLogout={() => { logout(); router.replace(`${base}/login`) }}
+          onLogout={() => { logout(); router.replace('/login') }}
           nextLocaleLabel={locale === 'en' ? 'বাংলা' : 'English'}
         />
       )}
@@ -114,11 +112,11 @@ export function BottomNav() {
       >
         <ul className="flex h-16 items-stretch">
           {PRIMARY_TABS.map((tab) => {
-            const active = isRouteActive(pathname, tab.href, base)
+            const active = isRouteActive(pathname, tab.href)
             return (
               <li key={tab.key} className="flex-1">
                 <Link
-                  href={`${base}${tab.href === '/' ? '' : tab.href}`}
+                  href={tab.href}
                   aria-current={active ? 'page' : undefined}
                   className="tap flex h-full flex-col items-center justify-center gap-1"
                 >
@@ -194,7 +192,6 @@ export function BottomNav() {
    to crowd the desktop header (language, organization, sign out).
    -------------------------------------------------------------------------- */
 function MoreSheet({
-  base,
   pathname,
   orgName,
   onClose,
@@ -202,7 +199,6 @@ function MoreSheet({
   onLogout,
   nextLocaleLabel,
 }: {
-  base: string
   pathname: string
   orgName?: string
   onClose: () => void
@@ -245,11 +241,11 @@ function MoreSheet({
         <div className="max-h-[70vh] overflow-y-auto px-4 pb-4">
           <div className="grid grid-cols-3 gap-2">
             {MORE_LINKS.map((link) => {
-              const active = isRouteActive(pathname, link.href, base)
+              const active = isRouteActive(pathname, link.href)
               return (
                 <Link
                   key={link.key}
-                  href={`${base}${link.href}`}
+                  href={link.href}
                   onClick={onClose}
                   className={cn(
                     'tap flex flex-col items-center gap-2 rounded-2xl border px-2 py-4 text-center',
@@ -279,7 +275,7 @@ function MoreSheet({
             <SheetRow
               icon={Building2}
               label={t('organization')}
-              href={`${base}/organization`}
+              href="/organization"
               onNavigate={onClose}
             />
             <SheetRow icon={LogOut} label={t('logout')} onClick={onLogout} danger />

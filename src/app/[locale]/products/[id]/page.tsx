@@ -1,8 +1,8 @@
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
-import { useParams, useRouter } from 'next/navigation'
-import { useTranslations } from 'next-intl'
+import { useEffect, useMemo, useState } from 'react'
+import { useParams } from 'next/navigation'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import {
@@ -15,11 +15,10 @@ import {
 } from '@/components/ui/table'
 import { useStore } from '@/store/useStore'
 import { formatCurrency, formatDate, formatOrderCode } from '@/lib/utils'
-import { useLocale } from 'next-intl'
 import { ChevronLeft, Layers, Tag } from 'lucide-react'
-import { listSells as fetchSells, listProducts as fetchProducts, listDryingGains } from '@/lib/api'
-import { normalizeOrder, normalizeProduct, normalizeDryingGain } from '@/lib/api'
+import { listDryingGains, listProducts as fetchProducts, listSells as fetchSells, normalizeDryingGain, normalizeOrder, normalizeProduct } from '@/lib/api'
 import type { DryingGain } from '@/types'
+import { useRouter } from '@/i18n/navigation'
 
 type SaleRow = { id: string; date: Date; orderId: string; quantity: number; price: number; total: number }
 
@@ -76,6 +75,9 @@ export default function ProductDetailsPage() {
         setSales(rows)
       })
       .finally(() => setLoading(false))
+    // Without this the `mounted` guard above never trips, so unmounting
+    // mid-request still called setSales/setLoading.
+    return () => { mounted = false }
   }, [productId])
 
   // Load drying gains
@@ -104,7 +106,7 @@ export default function ProductDetailsPage() {
       <div className="flex items-center justify-center h-64">
         <div className="text-center">
           <h2 className="text-xl font-semibold text-foreground mb-2">{t('notFound')}</h2>
-          <Button onClick={() => router.push(`/${locale}/products`)} variant="outline" className="mt-2 flex items-center gap-2"><ChevronLeft className="h-4 w-4" />{t('backToProducts')}</Button>
+          <Button onClick={() => router.push('/products')} variant="outline" className="mt-2 flex items-center gap-2"><ChevronLeft className="h-4 w-4" />{t('backToProducts')}</Button>
         </div>
       </div>
     )
@@ -115,7 +117,7 @@ export default function ProductDetailsPage() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-4">
-          <Button variant="ghost" onClick={() => router.push(`/${locale}/products`)} className="flex items-center gap-1">
+          <Button variant="ghost" onClick={() => router.push('/products')} className="flex items-center gap-1">
             <ChevronLeft className="h-5 w-5" /> Back
           </Button>
         </div>

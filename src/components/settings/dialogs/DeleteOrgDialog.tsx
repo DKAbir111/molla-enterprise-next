@@ -11,9 +11,9 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { AlertTriangle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { deleteOrganization } from '@/lib/api/organization-api'
+import { useRouter } from '@/i18n/navigation'
+import { deleteOrganization } from '@/lib/api'
 
 interface DeleteOrgDialogProps {
     open: boolean

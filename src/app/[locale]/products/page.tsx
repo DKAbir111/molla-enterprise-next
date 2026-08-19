@@ -1,24 +1,19 @@
 'use client'
 
 import { useState, useEffect, useMemo } from 'react'
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { useStore } from '@/store/useStore'
 import { cn, formatCurrency } from '@/lib/utils'
-import { useLocale } from 'next-intl'
-import { Plus, Search, Edit, Trash2, Eye, X } from 'lucide-react'
+import { Plus, Edit, Trash2, Eye } from 'lucide-react'
 import { ProductModal } from '@/components/products/ProductModal'
-import { DeleteConfirmationModal } from '@/components/shared/DeleteConfirmationModal'
-import { StatRail, StatTile } from '@/components/shared/StatRail'
-import { Fab } from '@/components/shared/Fab'
+import { DeleteConfirmationModal, EmptyState, Fab, SearchInput, StatRail, StatTile } from '@/components/shared'
 import { Product } from '@/types'
-import { listProducts as fetchProducts, deleteProduct as apiDeleteProduct } from '@/lib/api'
+import { listProducts as fetchProducts, deleteProduct as apiDeleteProduct, normalizeProduct } from '@/lib/api'
 import { toast } from 'sonner'
-import { normalizeProduct } from '@/lib/api'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Link } from '@/i18n/navigation'
 
 /* Matches Button variant="outline" size="icon". Used for the View link, which
    has to be a real anchor for prefetching and open-in-new-tab to work — Button
@@ -45,7 +40,7 @@ export default function ProductsPage() {
   useEffect(() => {
     let mounted = true
     if (products.length === 0) {
-      fetchProducts<any[]>()
+      fetchProducts()
         .then((res) => {
           if (!mounted) return
           (res || []).map(normalizeProduct).forEach(addProduct)
@@ -117,25 +112,13 @@ export default function ProductsPage() {
       <div className="space-y-3 md:flex md:items-center md:justify-between md:gap-4 md:space-y-0">
         <div className="space-y-3 md:flex md:flex-1 md:items-center md:gap-4 md:space-y-0">
           <div className="relative md:w-full md:max-w-md">
-            <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-subtle-foreground" />
-            <Input
-              type="search"
-              inputMode="search"
-              placeholder={t('search')}
+            <SearchInput
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 pl-10 pr-10 md:h-10"
+              onChange={setSearchQuery}
+              placeholder={t('search')}
+              clearable
+              clearLabel={t('search')}
             />
-            {searchQuery && (
-              <button
-                type="button"
-                aria-label={t('search')}
-                onClick={() => setSearchQuery('')}
-                className="tap absolute right-1 top-1/2 flex h-10 w-10 -translate-y-1/2 items-center justify-center rounded-full text-subtle-foreground"
-              >
-                <X className="h-4 w-4" />
-              </button>
-            )}
           </div>
 
           <div className="grid grid-cols-2 gap-3 md:flex md:gap-4">
@@ -200,14 +183,12 @@ export default function ProductsPage() {
 
       {/* Empty State */}
       {filteredProducts.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="px-4 py-12 text-center md:py-16">
-            <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full gradient-primary text-2xl text-primary-foreground">+</div>
-            <h3 className="mb-1 text-lg font-semibold">{t('emptyTitle')}</h3>
-            <p className="mb-4 text-muted-foreground">{t('emptyDescription')}</p>
-            <Button onClick={() => setModal({ open: true, mode: 'create' })}>{t('addProduct')}</Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title={t('emptyTitle')}
+          description={t('emptyDescription')}
+          actionLabel={t('addProduct')}
+          onAction={() => setModal({ open: true, mode: 'create' })}
+        />
       ) : (
         /* ------------------------------------------------------------ */
         /* One card structure that reflows: a horizontal list row on a    */
@@ -301,7 +282,7 @@ export default function ProductsPage() {
                     permanently unreachable — mobile shows icon buttons instead. */}
                 <div className="mt-auto flex items-center gap-1.5 pt-3 transition-opacity md:mt-4 md:gap-2 md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                   <Link
-                    href={`/${locale}/products/${product.id}`}
+                    href={`/products/${product.id}`}
                     aria-label={t('view')}
                     title={t('view')}
                     className={ICON_ACTION_CLASS}

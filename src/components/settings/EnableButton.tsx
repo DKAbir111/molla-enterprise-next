@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button'
 import { EnableOrgDialog } from './dialogs/EnableOrgDialog'
 import { toast } from 'sonner'
-import { listTeamMembers } from '@/lib/api/user-api'
+import { listTeamMembers } from '@/lib/api'
 
 interface EnableButtonProps {
     organizationId?: string

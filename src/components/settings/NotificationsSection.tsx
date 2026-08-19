@@ -4,10 +4,15 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Bell, Save } from 'lucide-react'
-import { getMyOrganizationSettings, updateOrganizationSettings } from '@/lib/api/organization-api'
-import { listSnoozes, unsnoozeAlert, type SnoozedItem } from '@/lib/api/alerts-api'
 import { toast } from 'sonner'
 import { Switch } from '@/components/ui/switch'
+import {
+  getMyOrganizationSettings,
+  listSnoozes,
+  type SnoozedItem,
+  unsnoozeAlert,
+  updateOrganizationSettings,
+} from '@/lib/api'
 
 interface NotificationsSectionProps {
     orgId: string | null

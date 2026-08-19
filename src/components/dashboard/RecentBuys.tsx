@@ -1,13 +1,13 @@
 'use client'
 
-import { useTranslations } from 'next-intl'
-import Link from 'next/link'
+import { useLocale, useTranslations } from 'next-intl'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { formatCurrency } from '@/lib/utils'
-import { api } from '@/lib/api/http'
-import { useLocale } from 'next-intl'
 import React from 'react'
+import { Link } from '@/i18n/navigation'
+import { grandTotalOf } from '@/lib/totals'
+import { api } from '@/lib/api'
 
 export function RecentBuys() {
   const t = useTranslations('dashboard')
@@ -28,7 +28,7 @@ export function RecentBuys() {
     <Card className="rounded-2xl">
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle className="text-lg">{t('recentPurchases')}</CardTitle>
-        <Link href={`/${locale}/buys`}>
+        <Link href={'/buys'}>
           <Button variant="outline" size="sm">{t('viewAll')}</Button>
         </Link>
       </CardHeader>
@@ -38,12 +38,9 @@ export function RecentBuys() {
         ) : (
           <div className="space-y-2">
             {buys.slice(0, 5).map((b) => {
-              const itemsTotal = (b.items || []).reduce((s: number, it: any) => s + Number(it.total || 0), 0)
-              const discount = Number(b.discount || 0)
-              const transport = Number(b.transportTotal || 0)
-              const grand = Math.max(0, itemsTotal + transport - discount)
+              const grand = grandTotalOf(b)
               return (
-                <Link key={b.id} href={`/${locale}/buys/${b.id}`} className="block">
+                <Link key={b.id} href={`/buys/${b.id}`} className="block">
                   <div className="flex items-center justify-between gap-3 rounded-xl border border-border-subtle p-3 transition-colors hover:bg-surface-hover">
                     <div className="flex min-w-0 items-center gap-3">
                       <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-linear-to-r from-blue-600 to-emerald-600 font-semibold text-white">

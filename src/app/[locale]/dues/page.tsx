@@ -1,4 +1,4 @@
-import { redirect } from 'next/navigation'
+import { redirect } from '@/i18n/navigation'
 
 /**
  * The combined dues screen split into Receivables and Payables so each sits
@@ -6,5 +6,5 @@ import { redirect } from 'next/navigation'
  */
 export default async function DuesRedirect({ params }: { params: Promise<{ locale: string }> }) {
   const { locale } = await params
-  redirect(`/${locale}/receivables`)
+  redirect({ href: '/receivables', locale })
 }

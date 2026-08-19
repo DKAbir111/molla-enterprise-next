@@ -1,7 +1,7 @@
-import Link from 'next/link'
 import { getTranslations } from 'next-intl/server'
 import { FileQuestion } from 'lucide-react'
 import { Button } from '@/components/ui/button'
+import { Link } from '@/i18n/navigation'
 
 /** Shown for unmatched routes inside a locale. */
 export default async function LocaleNotFound() {

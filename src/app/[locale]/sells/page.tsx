@@ -4,23 +4,28 @@ import { useState, useEffect, useMemo } from 'react'
 import { useTranslations, useLocale } from 'next-intl'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { Input } from '@/components/ui/input'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
-import { StatRail, StatTile } from '@/components/shared/StatRail'
-import { Fab } from '@/components/shared/Fab'
-import { DateFilter } from '@/components/shared/DateFilter'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import {
+  DateFilter,
+  EmptyState,
+  Fab,
+  PageToolbar,
+  RowActions,
+  StatRail,
+  StatTile,
+} from '@/components/shared'
+import { ReceivePaymentDialog } from '@/components/payments/ReceivePaymentDialog'
+import { SellModal } from '@/components/sells/SellModal'
+import { Link } from '@/i18n/navigation'
 import { isWithinRange, type DateRange } from '@/lib/date-range'
 import { useStore } from '@/store/useStore'
 import { formatCurrency, formatDate, formatOrderCode } from '@/lib/utils'
-import { Plus, Search, Eye, Edit, Printer, HandCoins } from 'lucide-react'
-import { ReceivePaymentDialog } from '@/components/payments/ReceivePaymentDialog'
-import { listSells } from '@/lib/api/sell-api'
-import { normalizeOrder } from '@/lib/api'
-import { SellModal } from '@/components/sells/SellModal'
-// Details shown in dedicated page now
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { updateSell as apiUpdateSell } from '@/lib/api/sell-api'
+import { orderTotals } from '@/lib/totals'
+import { listSells, updateSell as apiUpdateSell, normalizeOrder } from '@/lib/api'
+import { Printer, HandCoins } from 'lucide-react'
 import { toast } from 'sonner'
+import type { Order, OrderStatus } from '@/types'
 
 export default function SellsPage() {
   const t = useTranslations('sells')
@@ -30,16 +35,14 @@ export default function SellsPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [range, setRange] = useState<DateRange>({})
   const [modalOpen, setModalOpen] = useState(false)
-  const [selectedSell, setSelectedSell] = useState<any | null>(null)
-  // const [showDetails, setShowDetails] = useState(false)
-  const [showEdit, setShowEdit] = useState(false)
-  const [payTarget, setPayTarget] = useState<any | null>(null)
+  const [editing, setEditing] = useState<Order | null>(null)
+  const [payTarget, setPayTarget] = useState<(Order & { due: number }) | null>(null)
   const updateSellStatus = useStore((s) => s.updateSellStatus)
 
   useEffect(() => {
     let mounted = true
     if (sells.length === 0) {
-      listSells<any[]>()
+      listSells()
         .then((res) => { if (!mounted) return; (res || []).map(normalizeOrder).forEach(addSell) })
         .catch(() => { })
     }
@@ -68,18 +71,15 @@ export default function SellsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative w-full min-w-[12rem] flex-1 md:max-w-md">
-          <Search className="pointer-events-none absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-subtle-foreground" />
-          <Input type="search" placeholder={t('search')} value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="h-12 pl-10 md:h-10" />
-        </div>
+      <PageToolbar
+        search={searchQuery}
+        onSearchChange={setSearchQuery}
+        searchPlaceholder={t('search')}
+        actionLabel={t('newOrder')}
+        onAction={() => setModalOpen(true)}
+      >
         <DateFilter value={range} onChange={(v) => setRange({ start: v.start, end: v.end })} />
-
-        {/* Mobile uses the floating action button below instead. */}
-        <Button className="hidden shrink-0 items-center gap-2 md:ml-auto md:flex" onClick={() => setModalOpen(true)}>
-          <Plus className="h-4 w-4" /> {t('newOrder')}
-        </Button>
-      </div>
+      </PageToolbar>
 
       {/* Mini Dashboard */}
       <StatRail className="md:grid-cols-5">
@@ -91,14 +91,12 @@ export default function SellsPage() {
       </StatRail>
 
       {filtered.length === 0 ? (
-        <Card className="border-dashed">
-          <CardContent className="py-16 text-center">
-            <div className="mx-auto mb-4 h-14 w-14 rounded-full gradient-primary text-primary-foreground flex items-center justify-center text-2xl">+</div>
-            <h3 className="text-lg font-semibold mb-1">{t('emptyTitle')}</h3>
-            <p className="text-muted-foreground mb-4">{t('emptyDescription')}</p>
-            <Button onClick={() => setModalOpen(true)}>{t('newOrder')}</Button>
-          </CardContent>
-        </Card>
+        <EmptyState
+          title={t('emptyTitle')}
+          description={t('emptyDescription')}
+          actionLabel={t('newOrder')}
+          onAction={() => setModalOpen(true)}
+        />
       ) : (
         <Card>
           <CardContent className="p-0">
@@ -115,15 +113,10 @@ export default function SellsPage() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.map((o, idx) => {
-                  const itemsTotal = (o.items || []).reduce((s, it) => s + Number(it.total || 0), 0)
-                  const discount = Number(o.discount || 0)
-                  const transport = Number(o.transportTotal || 0)
-                  const grand = Math.max(0, itemsTotal + transport - discount)
-                  const paid = Number(o.paidAmount || 0)
-                  const due = Math.max(0, grand - paid)
+                {filtered.map((o) => {
+                  const { grand, paid, due } = orderTotals(o)
                   return (
-                    <TableRow key={`${o.id}-${idx}`}>
+                    <TableRow key={o.id}>
                       <TableCell className="font-medium" data-primary="">{formatOrderCode(o.id, o.createdAt)}</TableCell>
                       <TableCell data-label={t('customer')}>{o.customerName}</TableCell>
                       <TableCell data-label={t('date')}>{formatDate(o.createdAt, locale)}</TableCell>
@@ -132,7 +125,7 @@ export default function SellsPage() {
                           <Select
                             value={o.status}
                             onValueChange={async (v) => {
-                              const next = v as any
+                              const next = v as OrderStatus
                               const prev = o.status
                               try {
                                 updateSellStatus(o.id, next)
@@ -159,15 +152,12 @@ export default function SellsPage() {
                       <TableCell className="md:text-right" data-label={t('paidDue')}>{formatCurrency(paid, locale)} / {formatCurrency(due, locale)}</TableCell>
                       <TableCell className="font-medium md:text-right" data-label={t('total')}>{formatCurrency(grand, locale)}</TableCell>
                       <TableCell className="md:text-right">
-                        <div className="flex justify-end gap-1">
-                          <a href={`/${locale}/sells/${o.id}`}>
-                            <Button variant="ghost" size="icon" className="tap" title={t('view')} aria-label={t('view')}>
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                          </a>
-                          <Button variant="ghost" size="icon" className="tap" title={t('edit')} aria-label={t('edit')} onClick={() => { setSelectedSell(o); setShowEdit(true) }}>
-                            <Edit className="h-4 w-4" />
-                          </Button>
+                        <div className="flex items-center justify-end gap-1">
+                          <RowActions
+                            viewHref={`/sells/${o.id}`}
+                            onEdit={() => setEditing(o)}
+                            labels={{ view: t('view'), edit: t('edit'), delete: t('delete') }}
+                          />
                           {due > 0 && o.status !== 'cancelled' && (
                             <Button
                               variant="ghost"
@@ -180,11 +170,16 @@ export default function SellsPage() {
                               <HandCoins className="h-4 w-4" />
                             </Button>
                           )}
-                          <a href={`/${locale}/sells/${o.id}`}>
-                            <Button variant="ghost" size="icon" className="tap" title={t('print')} aria-label={t('print')}>
-                              <Printer className="h-4 w-4" />
-                            </Button>
-                          </a>
+                          {/* Printing lives on the detail page, which owns the
+                              print stylesheet — this is a shortcut to it. */}
+                          <Link
+                            href={`/sells/${o.id}`}
+                            title={t('print')}
+                            aria-label={t('print')}
+                            className="tap inline-flex h-9 w-9 items-center justify-center rounded-lg transition-colors hover:bg-surface-hover"
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Link>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -210,21 +205,19 @@ export default function SellsPage() {
           customerName={payTarget.customerName}
           outstanding={payTarget.due}
           sellId={payTarget.id}
-          locale={locale as string}
+          locale={locale}
           onRecorded={() => {
             // paidAmount is derived server-side now, so refetch rather than
             // guessing the new figure locally.
-            listSells<any[]>()
+            listSells()
               .then((res) => { (res || []).map(normalizeOrder).forEach(addSell) })
               .catch(() => { })
           }}
         />
       )}
 
-      {/* Details modal removed in favor of dedicated page */}
-
-      {showEdit && selectedSell && (
-        <SellModal open={showEdit} mode="edit" onClose={() => setShowEdit(false)} sell={selectedSell} />
+      {editing && (
+        <SellModal open mode="edit" onClose={() => setEditing(null)} sell={editing} />
       )}
     </div>
   )

@@ -10,9 +10,9 @@ import {
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
 import { AlertTriangle } from 'lucide-react'
-import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
-import { disableOrganization } from '@/lib/api/organization-api'
+import { useRouter } from '@/i18n/navigation'
+import { disableOrganization } from '@/lib/api'
 
 interface DisableOrgDialogProps {
     open: boolean

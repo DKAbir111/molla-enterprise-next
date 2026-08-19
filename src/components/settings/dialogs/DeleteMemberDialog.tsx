@@ -8,7 +8,7 @@ import {
     DialogTitle,
 } from '@/components/ui/dialog'
 import { Button } from '@/components/ui/button'
-import { type TeamMember } from '@/lib/api/user-api'
+import { type TeamMember } from '@/lib/api'
 
 interface DeleteMemberDialogProps {
     open: boolean

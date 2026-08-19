@@ -1,12 +1,11 @@
 'use client'
 
 import { useLocale, useTranslations } from 'next-intl'
-import { usePathname, useRouter } from 'next/navigation'
+import { usePathname, useRouter } from '@/i18n/navigation'
 import { Button } from '@/components/ui/button'
 import { Languages, Bell, User, LogOut, TriangleAlert, Clock, CircleDollarSign, Receipt, Trash2 } from 'lucide-react'
-import { logout } from '@/lib/api'
+import { getAlerts, logout, snoozeAlert } from '@/lib/api'
 import React from 'react'
-import { getAlerts, snoozeAlert } from '@/lib/api/alerts-api'
 import { toast } from 'sonner'
 import { formatCurrency } from '@/lib/utils'
 
@@ -16,17 +15,19 @@ export function Header() {
   const router = useRouter()
   // const t = useTranslations()
 
+  // `pathname` is locale-stripped here, so the router adds the new prefix
+  // itself rather than us swapping the old one out of the string.
   const toggleLocale = () => {
-    const newLocale = locale === 'en' ? 'bn' : 'en'
-    const path = pathname.replace(`/${locale}`, `/${newLocale}`)
-    router.push(path)
+    router.replace(pathname, { locale: locale === 'en' ? 'bn' : 'en' })
   }
 
   const tNav = useTranslations('nav')
   const tn = useTranslations('notifications')
 
+  // '/products/123' -> ['', 'products', '123'], so the section is index 1.
+  // It was index 2 while the locale still led the path.
   const segments = pathname.split('/')
-  const routeKey = segments[2] ? segments[2] as any : 'dashboard'
+  const routeKey = segments[1] || 'dashboard'
   const staticTitles: Record<string, string> = {
     'quick-entries': 'Quick Entries',
   }
@@ -421,7 +422,7 @@ export function Header() {
             size="sm"
             aria-label={tn('organization')}
             className="hidden md:inline-flex"
-            onClick={() => router.push(`/${locale}/organization`)}
+            onClick={() => router.push('/organization')}
           >
             <User className="h-4 w-4" />
           </Button>
@@ -430,7 +431,7 @@ export function Header() {
             size="sm"
             aria-label={tn('signOut')}
             className="hidden md:inline-flex"
-            onClick={() => { logout(); router.replace(`/${locale}/login`) }}
+            onClick={() => { logout(); router.replace('/login') }}
           >
             <LogOut className="h-4 w-4" />
           </Button>

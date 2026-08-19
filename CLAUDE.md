@@ -14,6 +14,28 @@ exists separately and is not maintained alongside this one.
 - Same origin for UI and API, so `axios` uses `baseURL: '/api'` and there is no
   CORS layer anywhere.
 
+### Where things live
+
+| Path | Holds |
+| --- | --- |
+| `src/app/[locale]/` | Pages. Route folders only — no components. |
+| `src/app/api/` | Route handlers, one folder per endpoint. |
+| `src/server/` | Server-only: Prisma, JWT, services, zod schemas. |
+| `src/components/ui/` | Unstyled primitives (shadcn). Imported deeply, by file. |
+| `src/components/shared/` | Cross-feature building blocks. Import via the barrel. |
+| `src/components/<feature>/` | Feature-owned components (`sells/`, `vendors/`, …). |
+| `src/lib/` | Browser-safe helpers: api client, totals, dates, PDFs, `cn`. |
+| `src/lib/api/` | One module per resource. Import via the `@/lib/api` barrel. |
+| `src/i18n/` | Routing, request config, messages, navigation helpers. |
+| `src/store/` | Zustand stores, one per concern. |
+| `src/types/` | Shared domain types. Components must not define their own. |
+
+Two barrels are load-bearing and everything imports through them:
+`@/lib/api` and `@/components/shared`. Deep paths into either are a mistake —
+they are how three api modules ended up missing from the barrel unnoticed.
+`src/components/ui/` is the deliberate exception: shadcn primitives are imported
+by file, as upstream generates them.
+
 ## Conventions that are load-bearing
 
 **Route handlers stay thin.** `withAuth` / `withPublic` (`src/server/http/route.ts`)
@@ -36,6 +58,23 @@ first; it throws when there is none and narrows the type so the id cannot reach 
 + transport − discount. The ledger uses `grandTotalFromItems`, which recomputes
 from the line items rather than trusting the cached `total` column. Do not
 retype either formula at a call site.
+
+**On the client the same formulas live in `src/lib/totals.ts`** — `money.ts` is
+server-only, so components cannot reach it. Use `orderTotals` for a full
+breakdown, `grandTotalOf` / `amountDueOf` for a single figure. The two files must
+stay in agreement; change one, change the other. This exists because the
+expression was previously written out by hand in ten components.
+
+**Navigation goes through `src/i18n/navigation.ts`.** Import `Link`, `useRouter`,
+`redirect` and `usePathname` from there and pass *unprefixed* paths —
+`/customers/123`, not `` `/${locale}/customers/123` ``. The locale is added for
+you, and `usePathname` returns the path with it already stripped. Never import
+`Link` from `next/link` or use a raw `<a>` for an internal route.
+
+**List pages are assembled from `src/components/shared`,** not hand-built:
+`PageToolbar` (search + filters + create), `EmptyState`, `StatRail`/`StatTile`,
+`Fab`, and the table cells `ContactCell`, `IconTextCell`, `CountBadge`,
+`RowActions`. Six pages had independently drifting copies of each.
 
 **`paidAmount` is a cache, never written directly.** Every change is a `Payment`
 row; the column is recomputed from the sum. Writing it straight from a form is
@@ -62,15 +101,18 @@ only manual transactions — counting both double-counted every paid order.
 
 ## Gotchas
 
-- `next.config.ts` has `typescript.ignoreBuildErrors: false` — keep it that way.
-  `eslint.ignoreDuringBuilds` is still `true` only because the UI carried over
-  about twenty pre-existing lint errors; clearing those and flipping it is a good
-  small task.
+- `next.config.ts` has both `typescript.ignoreBuildErrors` and
+  `eslint.ignoreDuringBuilds` set to `false`. Keep them that way — the carried-over
+  lint errors have been cleared, and letting them back in is how the last batch
+  accumulated unnoticed. `npm run typecheck` and `npx next lint` are both clean.
 - The `[locale]` segment will happily match `/api/...` if no API route exists at
   that path, returning an HTML 404. `src/app/api/[...path]/route.ts` catches that
   and returns JSON instead.
 - `params` is a promise in Next 15. The route wrappers await it; handlers receive
   a plain object.
-- i18n: `en.json` and `bn.json` must stay at equal key counts. Bengali pages are
-  still served with `<html lang="en">` in `src/app/layout.tsx`, which also stops
-  the `[lang="bn"]` font rule in `globals.css` from ever matching. Known, unfixed.
+- i18n: `en.json` and `bn.json` must stay at equal key counts (740 each, and the
+  key *paths* are identical — check both, not just the totals).
+- `<html lang>` is resolved in `src/app/layout.tsx` via `getLocale()`, not
+  hardcoded. It has to happen there because the root layout owns the `<html>`
+  element and sits above the `[locale]` segment, so it never sees the param. This
+  is also what makes the `[lang="bn"]` font rule in `globals.css` match.

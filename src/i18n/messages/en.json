@@ -70,7 +70,8 @@
     "quantity": "Quantity",
     "total": "Total",
     "print": "Print",
-    "downloadPDF": "Download PDF"
+    "downloadPDF": "Download PDF",
+    "downloadFailed": "Could not generate the PDF. Please try again."
   },
   "ticker": {
     "title": "Alerts",
@@ -127,7 +128,8 @@
     "searchCustomer": "Search by name or phone…",
     "searchProducts": "Search products to add…",
     "enterPhone": "Enter phone",
-    "enterDeliveryAddress": "Enter delivery address"
+    "enterDeliveryAddress": "Enter delivery address",
+    "delete": "Delete"
   },
   "buys": {
     "title": "Buys",
@@ -164,7 +166,8 @@
     "noVendorsFound": "No vendors found",
     "searchVendor": "Search vendor by name…",
     "searchProducts": "Search products to add…",
-    "addressPlaceholder": "Street, City, Country"
+    "addressPlaceholder": "Street, City, Country",
+    "delete": "Delete"
   },
   "dashboard": {
     "title": "Business overview",
@@ -323,7 +326,8 @@
     "activeCustomers": "Active Customers",
     "totalRevenue": "Total Revenue",
     "avgOrderValue": "Avg. Order Value",
-    "since": "Since"
+    "since": "Since",
+    "deleteConfirm": "Are you sure you want to delete {name}?"
   },
   "customerDetails": {
     "back": "Back",
@@ -348,7 +352,8 @@
     "quantity": "Quantity",
     "price": "Price",
     "total": "Total",
-    "invoice": "Invoice"
+    "invoice": "Invoice",
+    "downloadFailed": "Could not generate the PDF. Please try again."
   },
   "orders": {
     "title": "Orders",
