@@ -13,6 +13,9 @@ const TOKEN_COOKIE = 'bm_token'
 
 // Reachable without a session.
 const PUBLIC_PATHS = [
+  // The marketing page. Signed-in visitors are not bounced off it — they may
+  // legitimately want to read the pricing or terms they already pay for.
+  '/',
   '/login',
   '/register',
   '/forgot-password',

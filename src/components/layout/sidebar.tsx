@@ -30,7 +30,7 @@ import {
 const NAV_GROUPS = [
   {
     label: null,
-    items: [{ key: 'dashboard', href: '/', icon: LayoutDashboard }],
+    items: [{ key: 'dashboard', href: '/dashboard', icon: LayoutDashboard }],
   },
   {
     label: 'catalog',
@@ -71,7 +71,6 @@ const NAV_GROUPS = [
  * /products for a hypothetical /products-archive.
  */
 function isRouteActive(pathname: string, href: string) {
-  if (href === '/') return pathname === '/'
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 

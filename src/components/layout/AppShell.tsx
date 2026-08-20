@@ -46,8 +46,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { organization, fetchOrganization } = useOrganizationStore()
 
   // Public routes: no auth gate, no sidebar/header. Legal pages belong here —
-  // they are linked from the signup consent line, before any account exists.
-  const authRoutes = new Set([
+  // they are linked from the signup consent line, before any account exists —
+  // and so does '/', which is the marketing page and carries its own nav and
+  // footer. The app itself starts at /dashboard.
+  const publicRoutes = new Set([
+    '/',
     '/login',
     '/register',
     '/forgot-password',
@@ -55,7 +58,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     '/terms',
     '/privacy',
   ])
-  const isAuthRoute = authRoutes.has(pathname)
+  const isAuthRoute = publicRoutes.has(pathname)
   const isOrgRoute = pathname === '/organization'
   const shouldHide = isAuthRoute || isOrgRoute
 

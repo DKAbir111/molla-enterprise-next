@@ -16,7 +16,7 @@ export default async function LocaleNotFound() {
         <h1 className="mt-1 text-xl font-semibold text-foreground">{t('notFoundTitle')}</h1>
         <p className="mt-2 text-sm text-muted-foreground">{t('notFoundBody')}</p>
         <div className="mt-6 flex justify-center">
-          <Link href="/">
+          <Link href="/dashboard">
             <Button>{t('goToDashboard')}</Button>
           </Link>
         </div>

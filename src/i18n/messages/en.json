@@ -810,5 +810,229 @@
     "newIncome": "New Income Entry",
     "newExpense": "New Expense Entry",
     "dialogHint": "Record transaction details with line items and contact information."
+  },
+  "landing": {
+    "nav": {
+      "features": "Features",
+      "how": "How it works",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "getStarted": "Get started",
+      "openMenu": "Open menu",
+      "closeMenu": "Close menu"
+    },
+    "hero": {
+      "badge": "For sand, stone and cement traders",
+      "title": "Know what is in the yard. And what it cost you.",
+      "titleAccent": "And what it cost you.",
+      "subtitle": "Molla Enterprise keeps stock, purchases, sales, transport and dues in one ledger — so the number on the screen matches the number in the yard.",
+      "ctaPrimary": "Start free",
+      "ctaSecondary": "See how it works",
+      "note": "No credit card required. Set up in an afternoon.",
+      "previewStock": "Stock on hand",
+      "previewDue": "Outstanding dues",
+      "previewMargin": "Margin"
+    },
+    "replaces": {
+      "label": "Replaces",
+      "items": [
+        "the stock register",
+        "the payment diary",
+        "the calculator",
+        "the WhatsApp thread"
+      ]
+    },
+    "features": {
+      "eyebrow": "What you get",
+      "title": "Everything a trading yard actually needs",
+      "subtitle": "Not a general accounting package bent into shape. Built around buying by the truckload and selling by the foot.",
+      "items": [
+        {
+          "title": "Stock that reconciles",
+          "body": "Every sale and purchase moves stock. Drying gains and losses are recorded against the product, not quietly absorbed."
+        },
+        {
+          "title": "True cost per unit",
+          "body": "Purchase price, transport per trip and other costs land on the line item — so the margin you read is the margin you made."
+        },
+        {
+          "title": "Dues in both directions",
+          "body": "Receivables from customers and payables to vendors, each sitting beside the orders they came from."
+        },
+        {
+          "title": "Payments, never overwrites",
+          "body": "Each instalment is its own row and the paid total is recomputed from them. Nothing erases an earlier payment."
+        },
+        {
+          "title": "Low-stock alerts",
+          "body": "A daily digest and an in-app alert before a line runs out in the middle of an order."
+        },
+        {
+          "title": "English and বাংলা",
+          "body": "The whole system in either language, chosen per person. Your staff and your accountant do not have to agree."
+        }
+      ]
+    },
+    "how": {
+      "eyebrow": "How it works",
+      "title": "Running by the end of the day",
+      "subtitle": "No migration project, no consultant. Three steps and the ledger starts filling itself.",
+      "steps": [
+        {
+          "title": "Add products and vendors",
+          "body": "Your material lines, their units and rates, and the vendors you buy from. Ten minutes of typing."
+        },
+        {
+          "title": "Record buys and sells",
+          "body": "Enter each purchase and order as it happens. Stock, cost, transport and dues update from that one entry."
+        },
+        {
+          "title": "Read the numbers",
+          "body": "Margins, outstanding dues, stock on hand and a daily report — all derived, none of it maintained by hand."
+        }
+      ]
+    },
+    "spotlight": {
+      "eyebrow": "Built around the work",
+      "items": [
+        {
+          "title": "Transport is part of the cost, not a footnote",
+          "body": "A truckload costs what it costs to move. Enter the rate per trip and the number of trips, and it is carried into the order total and the per-unit cost automatically — instead of being remembered separately and forgotten at the margin.",
+          "points": [
+            "Rate per trip × trips, applied at the order",
+            "Folded into grand total and unit cost",
+            "Visible on every invoice and report"
+          ]
+        },
+        {
+          "title": "One number for what you are owed",
+          "body": "Receivables sit with the customer, payables with the vendor, and both are computed from the payment rows rather than a column somebody typed. Take a part payment and the balance follows, on the order and on the account.",
+          "points": [
+            "Part payments recorded individually",
+            "Balances derived, never overwritten",
+            "Customer and vendor statements as PDF"
+          ]
+        }
+      ]
+    },
+    "testimonials": {
+      "eyebrow": "In use",
+      "title": "From people who run yards",
+      "items": [
+        {
+          "quote": "We stopped losing track of stock between the yard and the office. Everything reconciles now.",
+          "name": "Operations lead",
+          "role": "Construction supplies"
+        },
+        {
+          "quote": "The part-payment handling is what sold me. Our old sheet used to wipe the earlier instalment every time.",
+          "name": "Proprietor",
+          "role": "Sand and stone trading"
+        },
+        {
+          "quote": "My manager works in Bangla, I read the reports in English. Same data, no arguing about it.",
+          "name": "Owner",
+          "role": "Cement and rod supply"
+        }
+      ]
+    },
+    "pricing": {
+      "eyebrow": "Pricing",
+      "title": "Priced per yard, not per seat",
+      "subtitle": "Every plan includes the full system. The difference is scale, not features held back.",
+      "perMonth": "/month",
+      "mostPopular": "Most popular",
+      "cta": "Start free",
+      "ctaContact": "Talk to us",
+      "note": "Prices shown are placeholders and are not final.",
+      "plans": [
+        {
+          "name": "Starter",
+          "price": "৳1,500",
+          "tagline": "A single yard finding its feet.",
+          "features": [
+            "1 organization, 3 users",
+            "Unlimited products and orders",
+            "Stock, dues and daily report",
+            "Email support"
+          ]
+        },
+        {
+          "name": "Business",
+          "price": "৳3,500",
+          "tagline": "A working yard with staff on the system.",
+          "features": [
+            "10 users",
+            "Everything in Starter",
+            "Low-stock alerts and daily digest",
+            "Customer and vendor PDF statements",
+            "Priority support"
+          ]
+        },
+        {
+          "name": "Enterprise",
+          "price": "Custom",
+          "tagline": "Several yards under one owner.",
+          "features": [
+            "Unlimited users",
+            "Multiple organizations",
+            "Data export and onboarding help",
+            "Named contact"
+          ]
+        }
+      ]
+    },
+    "faq": {
+      "eyebrow": "Questions",
+      "title": "Before you sign up",
+      "items": [
+        {
+          "q": "Do I need an accountant to use it?",
+          "a": "No. It is built for the person running the yard. Nothing asks you to pick a ledger account or a tax code — you record what you bought and what you sold, and the figures follow."
+        },
+        {
+          "q": "Can I move my existing records in?",
+          "a": "You can enter opening stock and outstanding dues directly, which is what most yards do on day one. For larger histories, get in touch and we will help with a bulk import."
+        },
+        {
+          "q": "What happens to my data if I stop paying?",
+          "a": "Your organization is disabled, not deleted. Everything stays readable so you can export it; writing is what stops. Re-enable and it picks up where it left off."
+        },
+        {
+          "q": "Does it work on a phone?",
+          "a": "Yes. The whole system is built for a phone first — the yard is not a place to carry a laptop — and the same screens expand on desktop."
+        },
+        {
+          "q": "Is my data separate from other businesses?",
+          "a": "Yes. Every query is scoped to your organization at the database level, so one business can never read another's records."
+        },
+        {
+          "q": "Can two people use it at once?",
+          "a": "Yes. Invite your staff, each with their own login, and everyone sees the same live figures."
+        }
+      ]
+    },
+    "cta": {
+      "title": "Stop reconciling at midnight.",
+      "subtitle": "Set up your yard today and let the ledger keep itself.",
+      "primary": "Start free",
+      "secondary": "Sign in"
+    },
+    "footer": {
+      "tagline": "Stock, sales, purchases and dues for construction material traders.",
+      "product": "Product",
+      "company": "Company",
+      "legal": "Legal",
+      "features": "Features",
+      "pricing": "Pricing",
+      "faq": "FAQ",
+      "signIn": "Sign in",
+      "about": "About",
+      "contact": "Contact",
+      "terms": "Terms of Service",
+      "privacy": "Privacy Policy",
+      "rights": "All rights reserved."
+    }
   }
 }

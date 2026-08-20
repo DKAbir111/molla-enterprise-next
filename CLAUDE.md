@@ -7,6 +7,10 @@ exists separately and is not maintained alongside this one.
 ## Architecture
 
 - **App Router**, every page under `src/app/[locale]/` — `en` or `bn`.
+- **`/[locale]` is the public marketing page; the app starts at `/[locale]/dashboard`.**
+  The landing route is listed in the middleware's `PUBLIC_PATHS` and in
+  `AppShell`'s `publicRoutes`, so it renders with no sidebar, header or auth
+  gate. Post-login redirects go to `/dashboard`, never `/`.
 - **API** under `src/app/api/`, one folder per endpoint. 63 routes.
 - **`src/server/`** is server-only: Prisma, JWT, services, zod schemas. Nothing
   in `src/components/` may import from it.
@@ -24,6 +28,7 @@ exists separately and is not maintained alongside this one.
 | `src/components/ui/` | Unstyled primitives (shadcn). Imported deeply, by file. |
 | `src/components/shared/` | Cross-feature building blocks. Import via the barrel. |
 | `src/components/<feature>/` | Feature-owned components (`sells/`, `vendors/`, …). |
+| `src/components/marketing/` | Landing-page sections. Import via the barrel. |
 | `src/lib/` | Browser-safe helpers: api client, totals, dates, PDFs, `cn`. |
 | `src/lib/api/` | One module per resource. Import via the `@/lib/api` barrel. |
 | `src/i18n/` | Routing, request config, messages, navigation helpers. |
@@ -70,6 +75,13 @@ expression was previously written out by hand in ten components.
 `/customers/123`, not `` `/${locale}/customers/123` ``. The locale is added for
 you, and `usePathname` returns the path with it already stripped. Never import
 `Link` from `next/link` or use a raw `<a>` for an internal route.
+
+**Landing sections share `Section` / `SectionHeading`** from
+`src/components/marketing/Section.tsx` — one max width, one gutter, one vertical
+scale. All of them are server components; only `MarketingNav` ships JS, and the
+FAQ uses `<details>` rather than a scripted accordion. Pricing amounts in
+`landing.pricing.plans` are **placeholders** and the page says so in a notice;
+delete the notice and its `note` key when real prices land.
 
 **List pages are assembled from `src/components/shared`,** not hand-built:
 `PageToolbar` (search + filters + create), `EmptyState`, `StatRail`/`StatTile`,

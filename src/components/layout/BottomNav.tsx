@@ -29,7 +29,7 @@ import { useOrganizationStore } from '@/store/useOrganization'
    this array to change the bar — everything else derives from it.
    -------------------------------------------------------------------------- */
 const PRIMARY_TABS = [
-  { key: 'dashboard', href: '/', icon: LayoutDashboard },
+  { key: 'dashboard', href: '/dashboard', icon: LayoutDashboard },
   { key: 'sells', href: '/sells', icon: ShoppingCart },
   { key: 'products', href: '/products', icon: Package },
   { key: 'customers', href: '/customers', icon: Users },
@@ -49,7 +49,6 @@ const MORE_LINKS = [
 
 /** True when `pathname` is the tab's route or a detail page beneath it. */
 function isRouteActive(pathname: string, href: string) {
-  if (href === '/') return pathname === '/'
   return pathname === href || pathname.startsWith(`${href}/`)
 }
 

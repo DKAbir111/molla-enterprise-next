@@ -34,13 +34,13 @@ export default function OrganizationPage() {
         try {
           const org = await fetchOrganization()
           if (!active) return
-          if (org && org.id) router.replace('/')
+          if (org && org.id) router.replace('/dashboard')
           else setLoading(false)
         } catch {
           if (active) setLoading(false)
         }
       } else if (organization && organization.id) {
-        router.replace('/')
+        router.replace('/dashboard')
       } else {
         setLoading(false)
       }
@@ -71,7 +71,7 @@ export default function OrganizationPage() {
       const created = await createOrganization<any>({ name, email, phone, address, logoFile })
       setOrganization(created)
       toast.success(t('created'))
-      router.replace('/')
+      router.replace('/dashboard')
     } catch (err: any) {
       const raw = err?.response?.data?.message || err?.message || t('createFailed')
       const msg = Array.isArray(raw) ? raw[0] : raw
